@@ -1,0 +1,17 @@
+# R API
+
+Public functions use snake_case and classed-list results. Unknown or duplicate options fail. No argument is silently recycled, and numeric flags must be finite scalar integers; logical values are not numeric options. Character payloads must be one valid Unicode string; binary payloads must be `raw`. Factors, arrays, data frames, missing values, classed numeric objects and arbitrary integer vectors are rejected. For a vector of texts use `lapply(texts, generate)` explicitly.
+
+`specqr_options(...)` constructs validated options. `generate(value, options = NULL, ...)` accepts character, raw or a list of `specqr_segment` objects. `generate_segments(segments, ...)` explicitly selects manual segments. Options: `error_correction_level="M"`, `version=NULL`, `min_version=1`, `max_version=40`, `mask_pattern=NULL`, `mode="auto"`, `optimize_segments=TRUE`, `allow_kanji=TRUE`, `boost_error_correction=FALSE`, `eci=NULL`, `gs1=FALSE`, `fnc1=FALSE`, `fnc1_second=NULL`, `structured_append=NULL`, `margin=4`, `scale=8`, `foreground="#000000"`, `background="#ffffff"`, `print_dpi=NULL`.
+
+`version` fixes the version. Otherwise the smallest permitted version is selected. ECC boosting increases correction strength only when it fits in that version. `eci=TRUE` means assignment26; `FALSE`/`NULL` means no ECI. ECI/FNC1/SA combinations are rejected. A Structured Append header uses one-based `index` and `total`, and parity0–255.
+
+`segment(mode,data=NULL,...)` supports numeric/alphanumeric/byte/kanji plus control modes eci/fnc1/fnc1-second/structured-append. Convenience functions: `numeric_segment`, `alphanumeric_segment`, `byte_segment`, `kanji_segment`, `eci`, `fnc1`, `fnc1_second`, `structured_append_segment`. Constructors own and validate their input. Mutating a classed list does not make invalid fields trusted: public encoding boundaries revalidate it.
+
+`optimize_segments(text,version=1,allow_kanji=TRUE)` minimizes data segment bit cost with deterministic ties. `plan`/`estimate` and `plan_segments`/`analyze_segments` perform arithmetic-only capacity selection. Plans contain `ok`, `version`, `capacity_version`, `data_bit_length`, `capacity_bits`, `remaining_bits`, segments and diagnostics. Failed plans have no selected version but retain the checked capacity version. `get_capacity(version,level,mode=NULL,control_bits=0)` reports capacities.
+
+Results contain `$matrix` (logical, row/column), `$size`, `$version`, `$mask_pattern`, `$error_correction_level`, `$data_codewords` and `$codewords` (raw), `$segments`, `$diagnostics`, `$options`. `module_at(q,x,y)` uses one-based R coordinates: x is column, y is row. Direct matrix access uses `[row,column]`.
+
+Errors inherit `specqr_error`, `error`, `condition`. Specific classes are `specqr_invalid_input`, `specqr_invalid_version`, `specqr_invalid_mode`, `specqr_invalid_eci`, `specqr_invalid_gs1`, `specqr_invalid_color`, `specqr_invalid_output`, `specqr_invalid_ecc_level`, and `specqr_data_too_long`. `$code` is the uppercase stable code; `$detail_code` carries optional GS1 detail. Use `tryCatch(..., specqr_error=function(e) error_code(e))`. Never depend on a full human-readable error string.
+
+Resource limits are enforced before expensive processing: one million payload units, 16,384 manual segments, single-symbol capacity bounds, at most16 SA symbols, bounded geometry and raster budgets. Planning cannot make an oversized payload encodable. Empty character/raw payloads are supported by single-symbol generation; Structured Append requires nonempty multi-symbol input.

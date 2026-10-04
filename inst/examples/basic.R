@@ -1,0 +1,5 @@
+library(specqr)
+q <- generate("Hello, SpecQR!", error_correction_level="Q", eci=TRUE)
+stopifnot(is.logical(q$matrix), is.raw(to_png(q)), grepl("<svg",to_svg(q),fixed=TRUE))
+print(q)
+print(plan("1234567890",version=1))

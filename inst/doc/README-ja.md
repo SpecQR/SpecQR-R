@@ -11,7 +11,7 @@ QR Code Model 2 をフルスクラッチで実装した、実行時の追加パ�
 - SVG、RGBA ピクセル、PNG、データ URL、コマンドライン
 - R 4.5.3 以上。検証対象は Linux x86-64 の R 4.5.3 / 4.6.1
 
-Windows、macOS、その他のアーキテクチャは現時点で実機検証済みとはしていません。ソースは可搬性を意図した標準 R のみで構成しています。詳しくは [検証方針](docs/verification.md) を参照してください。インストール後のガイドは `system.file("doc", package = "specqr")` にあります。CRAN には公開していません。
+Windows、macOS、その他のアーキテクチャは現時点で実機検証済みとはしていません。ソースは可搬性を意図した標準 R のみで構成しています。詳しくは [検証方針](verification.md) を参照してください。インストール後のガイドは `system.file("doc", package = "specqr")` にあります。CRAN には公開していません。
 
 ## インストール
 
@@ -86,7 +86,7 @@ url <- create_gs1_digital_link(elements, base_url = "https://id.gs1.org")
 parse_gs1_digital_link(url)
 ```
 
-対応 AI は `get_supported_gs1_ais()` で確認できます。GS1 全 AI の網羅や、GS1 認証済み製品であることは意味しません。Digital Link は [厳格な ASCII authority プロファイル](docs/gs1.md) を実装し、ネットワークにはアクセスしません。
+対応 AI は `get_supported_gs1_ais()` で確認できます。GS1 全 AI の網羅や、GS1 認証済み製品であることは意味しません。Digital Link は [厳格な ASCII authority プロファイル](gs1.md) を実装し、ネットワークにはアクセスしません。
 
 ## Structured Append
 
@@ -121,6 +121,6 @@ Rscript --vanilla exec/specqr.R --help
 
 ## 検証と制限
 
-[API](docs/api.md) / [描画](docs/rendering.md) / [GS1](docs/gs1.md) / [検証](docs/verification.md) を参照してください。基本テストは R の標準機能だけで実行します。開発用の独立デコーダー検証では Python、ZXing-C++、ZXing Java、SVG ラスタライザーを使用しますが、利用時の依存関係には含めません。
+[API](api.md) / [描画](rendering.md) / [GS1](gs1.md) / [検証](verification.md) を参照してください。基本テストは R の標準機能だけで実行します。開発用の独立デコーダー検証では Python、ZXing-C++、ZXing Java、SVG ラスタライザーを使用しますが、利用時の依存関係には含めません。
 
 MIT ライセンス。仕様表・参照コーパス・検証ツールの出所は [NOTICE](NOTICE) に記載しています。

@@ -1,0 +1,23 @@
+SpecQR R
+Copyright (c) 2026 SpecQR contributors
+
+Full-scratch R implementation of the user-owned SpecQR QR algorithms and API
+contracts. Runtime source uses base R only. No contributed runtime package,
+external QR encoder, compiled extension, FFI, network service or downloaded
+runtime resource is used. R itself is the required interpreter.
+
+Behavioral owner baseline: SpecQR/SpecQR JavaScript
+15ad15e5c770ea0e39072f8f88b2733018f02ffd (3.0.0-rc.2), plus reviewed corrections
+for high-level FNC1 literal percent, consecutive group separators, Digital Link
+dot-value loss, ambiguous resolver prefixes, finite print diagnostics and
+invalid ECC names. Read-only Julia, Python and TypeScript editions were used
+as behavioral references. R is a new implementation of those contracts.
+
+QR block tables, BCH, placement and Reed-Solomon parameters are normative data.
+The 6,953-scalar QR Kanji table reproduces the owner's pinned WHATWG Shift_JIS
+first mapping. Mapping data SHA256:
+be0a434df7babc88848f0930ceb3ea9424c6715d89ed4b1b19bcb416f9892fa8
+
+Reference fixtures, Nayuki QR Code Generator, ZXing-C++, ZXing Java, Python and
+SVG rasterizers are development-only verification resources with their own
+licenses. Decoder/interpreter binaries are not included in the source package.

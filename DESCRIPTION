@@ -1,0 +1,16 @@
+Package: specqr
+Type: Package
+Title: Dependency-Free QR Model 2 Encoding from Scratch
+Version: 0.1.0
+Authors@R: person("SpecQR", "contributors", role = c("aut", "cre"), email = "specqr-maintainers@example.invalid")
+Description: Encodes QR Model 2 symbols with all forty versions, four error
+    correction levels, eight masks, data and control segments, exact segment
+    optimization, GS1 helpers, structured append, and SVG and PNG rendering.
+    All encoding and rendering algorithms are written in R. No contributed
+    packages, external encoders, compiled extensions, or network services are
+    required at runtime. Intended as an inspectable reference implementation.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.5.3)
+NeedsCompilation: no
+URL: https://github.com/SpecQR

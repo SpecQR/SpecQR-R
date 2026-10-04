@@ -1,0 +1,7 @@
+library(specqr)
+elements <- parse_gs1_human_readable("(01)09506000134352(10)LOT-7(17)261231")
+text <- create_gs1_element_string(elements)
+q <- generate(text,gs1=TRUE)
+uri <- create_gs1_digital_link(elements,base_url="https://id.gs1.org")
+stopifnot(validate_gs1_element_string(text)$ok,validate_gs1_digital_link(uri)$ok)
+print(uri)

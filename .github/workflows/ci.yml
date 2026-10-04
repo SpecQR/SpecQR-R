@@ -1,0 +1,175 @@
+name: R Linux CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash --noprofile --norc -e -o pipefail {0}
+
+jobs:
+  linux:
+    name: Linux x86-64 / R ${{ matrix.r }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        r: ['4.5.3', '4.6.1']
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+      LC_ALL: C.UTF-8
+      TZ: UTC
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1, node24
+        id: checkout
+        with:
+          persist-credentials: false
+
+      - name: Initialize evidence outside the checkout and source stage
+        id: evidence
+        if: ${{ !cancelled() }}
+        run: |
+          RSCRIPT_BIN="$RUNNER_TEMP/specqr-tools/R-${{ matrix.r }}/bin/Rscript"
+          CI_SOURCE="$RUNNER_TEMP/specqr/stage/SpecQR-R"
+          CI_EVIDENCE="$RUNNER_TEMP/specqr-evidence"
+          CI_TOOLS="$RUNNER_TEMP/specqr-tools"
+          printf '%s\n' "RSCRIPT_BIN=$RSCRIPT_BIN" "CI_SOURCE=$CI_SOURCE" \
+            "CI_EVIDENCE=$CI_EVIDENCE" "CI_TOOLS=$CI_TOOLS" >> "$GITHUB_ENV"
+          mkdir -p "$CI_EVIDENCE" "$CI_TOOLS"
+          uname -a > "$CI_EVIDENCE/host.txt"
+          cat /etc/os-release >> "$CI_EVIDENCE/host.txt"
+          python3 --version >> "$CI_EVIDENCE/host.txt"
+          python3 -c 'import platform, sys; assert platform.system() == "Linux" and platform.machine() == "x86_64"; assert sys.version_info[:2] == (3, 12), "CI wheel pins require CPython 3.12"'
+
+      - name: Check committed manifest and create deterministic source archive
+        id: stage
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' && steps.evidence.outcome == 'success' }}
+        run: |
+          git rev-parse HEAD > "$CI_EVIDENCE/checkout-commit.txt"
+          python3 scripts/prepare_ci.py stage --output "$RUNNER_TEMP/specqr" 2>&1 | tee "$CI_EVIDENCE/stage.log"
+
+      - name: Verification harness and installer self-tests
+        if: ${{ !cancelled() && steps.stage.outcome == 'success' }}
+        run: |
+          python3 "$CI_SOURCE/scripts/install_ci_tools.py" self-test 2>&1 | tee "$CI_EVIDENCE/installer-selftests.log"
+          python3 "$CI_SOURCE/scripts/test_verify_native.py" 2>&1 | tee "$CI_EVIDENCE/harness-selftests.log"
+
+      - name: Install R source-build prerequisites from official Ubuntu repositories
+        id: builddeps
+        if: ${{ !cancelled() && steps.stage.outcome == 'success' }}
+        run: |
+          sudo apt-get update 2>&1 | tee "$CI_EVIDENCE/apt-build-update.log"
+          sudo apt-get install --no-install-recommends -y \
+            build-essential gfortran pkg-config curl ca-certificates texinfo \
+            zlib1g-dev libbz2-dev liblzma-dev libpcre2-dev libcurl4-openssl-dev \
+            libicu-dev libdeflate-dev libzstd-dev \
+            2>&1 | tee "$CI_EVIDENCE/apt-build-install.log"
+          dpkg-query -W > "$CI_EVIDENCE/ubuntu-build-package-versions.txt"
+          gcc --version > "$CI_EVIDENCE/compiler-versions.txt"
+          g++ --version >> "$CI_EVIDENCE/compiler-versions.txt"
+          gfortran --version >> "$CI_EVIDENCE/compiler-versions.txt"
+          make --version >> "$CI_EVIDENCE/compiler-versions.txt"
+
+      - name: Build checksum-pinned official R and bundled recommended packages
+        id: rtool
+        if: ${{ !cancelled() && steps.stage.outcome == 'success' && steps.builddeps.outcome == 'success' }}
+        run: |
+          python3 "$CI_SOURCE/scripts/install_ci_tools.py" install-r \
+            --version '${{ matrix.r }}' --tools "$CI_TOOLS" \
+            --evidence "$CI_EVIDENCE/r-source-build" --jobs 4 \
+            2>&1 | tee "$CI_EVIDENCE/r-source-build.log"
+
+      - name: Native unit, full corpus, CLI and clean offline package consumers
+        if: ${{ !cancelled() && steps.stage.outcome == 'success' && steps.rtool.outcome == 'success' }}
+        run: |
+          python3 "$CI_SOURCE/scripts/verify_native.py" \
+            --rscript "$RSCRIPT_BIN" --expect-version '${{ matrix.r }}' \
+            --expect-platform linux --expect-arch x86_64 \
+            --source-archive "$RUNNER_TEMP/specqr/SpecQR-R-source.zip" \
+            --archive-sha256 "$(sha256sum "$RUNNER_TEMP/specqr/SpecQR-R-source.zip" | cut -d ' ' -f 1)" \
+            --output "$RUNNER_TEMP/specqr/native-raw" \
+            2>&1 | tee "$CI_EVIDENCE/native.log"
+
+      - name: Install test-only independent decoders and rasterizer
+        id: oracles
+        if: ${{ !cancelled() && steps.stage.outcome == 'success' && steps.rtool.outcome == 'success' }}
+        run: |
+          sudo apt-get update 2>&1 | tee "$CI_EVIDENCE/apt-oracles-update.log"
+          sudo apt-get install --no-install-recommends -y python3-pip openjdk-17-jdk-headless librsvg2-bin \
+            2>&1 | tee "$CI_EVIDENCE/apt-oracles-install.log"
+          python3 -m pip --isolated install --disable-pip-version-check --no-cache-dir \
+            --index-url https://pypi.org/simple --only-binary=:all: --require-hashes --no-deps \
+            --target "$CI_TOOLS/python" -r "$CI_SOURCE/scripts/requirements-ci.txt" \
+            2>&1 | tee "$CI_EVIDENCE/pip-oracles.log"
+          curl --fail --location --retry 3 --proto '=https' --proto-redir '=https' --tlsv1.2 \
+            https://repo.maven.apache.org/maven2/com/google/zxing/core/3.5.4/core-3.5.4.jar \
+            -o "$CI_TOOLS/core-3.5.4.jar"
+          printf '%s  %s\n' 71de5d89341b5fcf5dd89da7f44e84d825d0e084cdf3ec77c9abe26b0f0ceb13 "$CI_TOOLS/core-3.5.4.jar" | sha256sum --check
+          dpkg-query -W > "$CI_EVIDENCE/ubuntu-test-package-versions.txt"
+          /usr/lib/jvm/java-17-openjdk-amd64/bin/java --version > "$CI_EVIDENCE/decoder-tool-versions.txt"
+          /usr/bin/rsvg-convert --version >> "$CI_EVIDENCE/decoder-tool-versions.txt"
+          PYTHONPATH="$CI_TOOLS/python" python3 -c 'import importlib.metadata as m; print("zxing-cpp=" + m.version("zxing-cpp")); print("pillow=" + m.version("pillow"))' >> "$CI_EVIDENCE/decoder-tool-versions.txt"
+          sha256sum "$CI_TOOLS/core-3.5.4.jar" "$CI_SOURCE/scripts/requirements-ci.txt" >> "$CI_EVIDENCE/decoder-tool-versions.txt"
+
+      - name: ZXing-C++ actual PNG decoding
+        if: ${{ !cancelled() && steps.oracles.outcome == 'success' }}
+        run: python3 "$CI_SOURCE/scripts/verify_default_scale.py" --source "$CI_SOURCE" --rscript "$RSCRIPT_BIN" --python-deps "$CI_TOOLS/python" --output "$CI_EVIDENCE/decoders-cpp.json" 2>&1 | tee "$CI_EVIDENCE/decoders-cpp.log"
+
+      - name: ZXing Java actual PNG and matrix decoding
+        if: ${{ !cancelled() && steps.oracles.outcome == 'success' }}
+        run: python3 "$CI_SOURCE/scripts/verify_decoders.py" --rscript "$RSCRIPT_BIN" --decoder java --java /usr/lib/jvm/java-17-openjdk-amd64/bin/java --jar "$CI_TOOLS/core-3.5.4.jar" --output "$CI_EVIDENCE/decoders-java.json" 2>&1 | tee "$CI_EVIDENCE/decoders-java.log"
+
+      - name: Characterize Java default-scale detection with independent pixel controls
+        if: ${{ !cancelled() && steps.oracles.outcome == 'success' }}
+        run: python3 "$CI_SOURCE/scripts/characterize_java_default_scale.py" --rscript "$RSCRIPT_BIN" --java /usr/lib/jvm/java-17-openjdk-amd64/bin/java --jar "$CI_TOOLS/core-3.5.4.jar" --python-deps "$CI_TOOLS/python" --output "$CI_EVIDENCE/java-default8-controls.json" 2>&1 | tee "$CI_EVIDENCE/java-default8-controls.log"
+
+      - name: Independent SVG rasterization and PNG pixel comparison
+        if: ${{ !cancelled() && steps.oracles.outcome == 'success' }}
+        run: python3 "$CI_SOURCE/scripts/verify_render_decoders.py" --rscript "$RSCRIPT_BIN" --rasterizer /usr/bin/rsvg-convert --python-deps "$CI_TOOLS/python" --output "$CI_EVIDENCE/render-decoders.json" 2>&1 | tee "$CI_EVIDENCE/render-decoders.log"
+
+      - name: Shared regressions and strict authority vectors
+        if: ${{ !cancelled() && steps.oracles.outcome == 'success' }}
+        run: python3 "$CI_SOURCE/scripts/verify_shared_regressions.py" --rscript "$RSCRIPT_BIN" --python-deps "$CI_TOOLS/python" --output "$CI_EVIDENCE/shared-regressions.json" 2>&1 | tee "$CI_EVIDENCE/shared-regressions.log"
+
+      - name: Recheck staged source after every verification step
+        if: ${{ !cancelled() && steps.stage.outcome == 'success' }}
+        run: python3 "$CI_SOURCE/scripts/prepare_ci.py" verify --root "$CI_SOURCE" 2>&1 | tee "$CI_EVIDENCE/source-verification.json"
+
+      - name: Preserve native receipts, including failures
+        if: ${{ always() && steps.stage.outcome == 'success' }}
+        run: python3 "$CI_SOURCE/scripts/prepare_ci.py" collect --native "$RUNNER_TEMP/specqr/native-raw" --output "$CI_EVIDENCE/native" 2>&1 | tee "$CI_EVIDENCE/collect.log"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1, node24
+        if: always()
+        with:
+          name: linux-x86_64-r-${{ matrix.r }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            ${{ runner.temp }}/specqr-evidence/
+            ${{ runner.temp }}/specqr/stage-report.json
+            ${{ runner.temp }}/specqr/SpecQR-R-source.zip
+            ${{ runner.temp }}/specqr/native-raw/**/*.log
+            ${{ runner.temp }}/specqr/native-raw/**/*.json
+            ${{ runner.temp }}/specqr/native-raw/**/*.Rout*
+            ${{ runner.temp }}/specqr/native-raw/**/*.out
+            ${{ runner.temp }}/specqr/native-raw/**/*.stderr
+
+  required:
+    name: Required Linux checks
+    needs: [linux]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Fail unless every required R lane passed
+        env:
+          LINUX_RESULT: ${{ needs.linux.result }}
+        run: test "$LINUX_RESULT" = success

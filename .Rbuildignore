@@ -1,0 +1,10 @@
+^\.github$
+^\.gitignore$
+^scripts$
+^verification$
+^docs$
+^SOURCE-SHA256\.json$
+^README\.md$
+^NOTICE$
+^CONTRIBUTING\.md$
+^SECURITY\.md$
