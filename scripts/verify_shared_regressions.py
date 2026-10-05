@@ -68,11 +68,14 @@ def main():
   authority=PKG/'verification/fixtures/strict-authority-vectors.json'
   strict=json.loads(authority.read_text());report['strictAuthorityFixtureSha256']=digest(authority)
   counts['strictAuthorityOperations']=0
+  from gs1_contract import load_shared,contract,compare_contract
+  contracts=load_shared(PKG)
+  expected={r['id']:contracts['residual'].get(r['id'],r)['expected'] for r in contracts['current']['cases']}
   for v in strict['vectors']:
    for op in ['parse','validate','normalize']:
     q=execute(rscript_command(binary),[{'command':'digital-link-'+op,'url':v['input']}])[0]
-    if op=='validate':assert q.get('ok') is False,(v['id'],op,q)
-    else:assert q.get('code')=='INVALID_GS1',(v['id'],op,q)
+    actual={'throws':{'code':q['code'],'message':q['message']}} if 'error' in q else q['value'] if op=='normalize' else q
+    compare_contract(expected[v['id']+':link'+op.title()],actual,v['id']+':'+op)
     counts['strictAuthorityOperations']+=1
   finish_clients(report)
   assert snapshot()==report['sourceSha256'],'Source changed during verification'

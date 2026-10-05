@@ -1,0 +1,60 @@
+{
+  "scope": "Original render-gs1.R input migration; all444 assertions retained. Current TS is the independent positive source; no candidate-derived baseline.",
+  "sourceCommit": "16efc6c0a8e397c9df3d051d20fce6c1eebdfad7",
+  "baselineFileSha256": "0f955297fa4d67df64bb09ebf64d81f443c398fcbe971ec53ddfed8320d16fac",
+  "changes": [
+    {
+      "originalLine": 84,
+      "input": "builder base https://example.com?",
+      "prior": "reject",
+      "now": "exact ordinary URL"
+    },
+    {
+      "originalLine": 94,
+      "input": "https://example.com/01/09506000134352#",
+      "prior": "fragment rejection",
+      "now": "exact parsed payload"
+    },
+    {
+      "originalLine": 96,
+      "inputs": [
+        "0x",
+        "0X",
+        "1.0x",
+        "0x.",
+        "127.1",
+        "2130706433",
+        "127.0.0.01",
+        "127.0.0.1.",
+        "user@example.com",
+        "ex%61mple.com",
+        "-example.com",
+        "example-.com",
+        "a..b"
+      ],
+      "prior": "host rejection",
+      "now": "exact TypeScript-normalized URL; all other7 original hosts still reject"
+    },
+    {
+      "originalLine": 98,
+      "inputs": [
+        "",
+        "000443"
+      ],
+      "prior": "invalid port",
+      "now": "exact default-port omission; all other4 original ports still reject"
+    },
+    {
+      "originalLine": 101,
+      "input": "https://example.com\\01/09506000134352",
+      "prior": "invalid URI",
+      "now": "exact normalized URL"
+    },
+    {
+      "originalLine": 101,
+      "input": "https://example.com /01/09506000134352",
+      "prior": "invalid-uri diagnostic",
+      "now": "unsupported-host diagnostic; still rejected. URL lexical repair reaches forbidden ASCII host check."
+    }
+  ]
+}

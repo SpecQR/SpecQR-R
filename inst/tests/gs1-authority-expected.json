@@ -1,0 +1,922 @@
+{
+  "provenance": {
+    "description": "Synthetic authority vectors evaluated independently with archived SpecQR TypeScript",
+    "upstreamCommit": "16efc6c0a8e397c9df3d051d20fce6c1eebdfad7",
+    "nodeVersion": "v24.19.0",
+    "generatorSha256": "692ba9e530d06b6f6f4c68a5daccbf094315f4bf5a55f52db5e66883a247affc",
+    "sourceTreeSha256": "ee30b51e2409692f2f8020287a50cea5d80c2ceedb78f7c2a5a30e6d74199e75",
+    "sourceFiles": [
+      {
+        "path": "browser.d.ts",
+        "sha256": "8e3f6e297863ff72839a6ee0a2d66ed24a3a2842418197c2da47e031934d2271"
+      },
+      {
+        "path": "browser.js",
+        "sha256": "c7f1609850d0f614bb6b06c844805327c31064f4c8cc6a899a248a54751b200e"
+      },
+      {
+        "path": "core/codewords.js",
+        "sha256": "e06d096eb1ade1f118a9627c419503f289027d2044428309204600d2bd74ed19"
+      },
+      {
+        "path": "core/galois-field.js",
+        "sha256": "2928b5520268b0a795c1a4e14fac460f0dd37ef89a4366e10b1ac49aa3494631"
+      },
+      {
+        "path": "core/mask.js",
+        "sha256": "5df22969324cfc45bf6be7a768b09fae91e741582abfafd021422cc0eaa4fb34"
+      },
+      {
+        "path": "core/matrix.js",
+        "sha256": "afdf61b811f10041df6cbb4e6a9bb9f55b4a70c66152564131545457cb84ba50"
+      },
+      {
+        "path": "core/reed-solomon.js",
+        "sha256": "65dccf4baa39df55d4eb828418bb3bd0b00d3e7fb3520bff27b569c5010657b2"
+      },
+      {
+        "path": "core/tables.js",
+        "sha256": "3c53e40f238cb2db2fd5eba20dc70dbcb0d327925123f81dddbde7981785fb37"
+      },
+      {
+        "path": "diagnostics.js",
+        "sha256": "ff17e1fa76cf35cb8c8feadd50cbc2531e4f81557be9cac3febbdec4e81865fa"
+      },
+      {
+        "path": "encoding/bit-buffer.js",
+        "sha256": "7acc219a39d44ff62082996ba94268a5bb2cf1e65cd2ff53d157e169e920a111"
+      },
+      {
+        "path": "encoding/control-segments.js",
+        "sha256": "fa3de4161e4d3ce44ea00f98070b424b6d0a03e76c34f87ec8fd057abcab5993"
+      },
+      {
+        "path": "encoding/modes.js",
+        "sha256": "204a3a4df0a81b1e8decc63299cd099812ee4708882feb4ccb47f97ae68333e4"
+      },
+      {
+        "path": "encoding/shift-jis.js",
+        "sha256": "beb66ee39a3ac7a8890ea7a1e256b2e0552b2d7e821153ad68d4b40c6daa7def"
+      },
+      {
+        "path": "errors.js",
+        "sha256": "96d8a46d1e0da904847dcc9e32bd3498dcfc7b72924fd1d1dd528a64c6b57c70"
+      },
+      {
+        "path": "gs1.js",
+        "sha256": "8caa34a2eb6acfb24d5c46f8559fbd0a96dc0109d69a1789fbe74203a2290833"
+      },
+      {
+        "path": "gs1/ai-dictionary.js",
+        "sha256": "c483742e13e98f08bc461b4223502be9542e7043bc02031af3bb31a3def93099"
+      },
+      {
+        "path": "gs1/ai.js",
+        "sha256": "482f443c5b485173038ebea945a5c7d524efce87e2cd9c5595361494ceccea95"
+      },
+      {
+        "path": "gs1/check-digit.js",
+        "sha256": "5a3fafa1ef032d5a2603c094f34563026d577b6b926b7ffefaef36fc00ec93ce"
+      },
+      {
+        "path": "gs1/digital-link.js",
+        "sha256": "a4ea3059c7fa63fc5c099fa5bc1915e59cbfd8f103fe19120397787c49b5eb7a"
+      },
+      {
+        "path": "gs1/element-string.js",
+        "sha256": "441beb66197dd872186314a619b3cf8a04ad9956fef70e618a03d0b7bfe835cd"
+      },
+      {
+        "path": "gs1/index.js",
+        "sha256": "0b3d54b9dc1d1dd0343ba77b8e6c7e7e07bca96353fd42a5c98c8e0052947c8d"
+      },
+      {
+        "path": "gs1/parser.js",
+        "sha256": "5572e92815a5f3c3bb7aad67fabcfd0b2aa34085d12c7baef0a1cee123bcf9ef"
+      },
+      {
+        "path": "gs1/validation.js",
+        "sha256": "44e1321ab549f4d050816305b0a201e6d4396418dfe1c9d0de6675d6d6fc1368"
+      },
+      {
+        "path": "gs1/validator.js",
+        "sha256": "3482cab601f09d9b7dde94198c0f886c843c7d7f4018541388cc388fc993d64a"
+      },
+      {
+        "path": "index.d.ts",
+        "sha256": "418c434c76c08cbad5433fc9966819613887d4dceaa2acdec51dee5390f7df7c"
+      },
+      {
+        "path": "index.js",
+        "sha256": "a5d4e05df7aed06e780aec2e7ca4ce7d43753d7a8126df86d9c2252d995d8700"
+      },
+      {
+        "path": "internal/build.js",
+        "sha256": "441ba0487937f7ed08a35af504ce5a656f2fff9598c4273ff44c783d1650b7c5"
+      },
+      {
+        "path": "internal/bytes.js",
+        "sha256": "21638be346eb2a892b8e49989826fd00ef78ba9ac9fb5b88f946005aec92eb52"
+      },
+      {
+        "path": "internal/diagnostics-adapter.js",
+        "sha256": "f9878949f37b4d879d9e7231ddc1bab1c25204237a84fc5618de5ef4b0c715c8"
+      },
+      {
+        "path": "internal/generation.js",
+        "sha256": "47ba84f45479c967aa0cc79c3a2fee028823306490e26d1541f822ccaadf4a06"
+      },
+      {
+        "path": "internal/planning.js",
+        "sha256": "372de0a9779f6c583dd0f5b03b485bdb481bb7d1fb5567159d3fd37cafb2b9ab"
+      },
+      {
+        "path": "internal/render-result.js",
+        "sha256": "0b46ff36777d61bea9dc3ad40d57ab6f14ea16c80839f9ce1ca10cdaea65a5cb"
+      },
+      {
+        "path": "internal/structured-append.js",
+        "sha256": "2128eb6a7489f6da88a49d0188bafefc718daa1b33e537d50e362215d75ba109"
+      },
+      {
+        "path": "node.d.ts",
+        "sha256": "449fc5f716a41df882b0bf90784377120dfb47b19bb1bff8265745915718e201"
+      },
+      {
+        "path": "node.js",
+        "sha256": "091c94d0e17f520d203c34db9b728107fdc70874113fd8827cf8a0a393e91719"
+      },
+      {
+        "path": "options.js",
+        "sha256": "97a3e2d5b2e5a59edc979767738c77c107ce6addbb2d2779e473abaeb5a1a872"
+      },
+      {
+        "path": "render/base64.js",
+        "sha256": "4667a73ceb0aeed9dc098be49bedfb5b9e6ff143ebb3da98b766bc78ffba5baf"
+      },
+      {
+        "path": "render/canvas.js",
+        "sha256": "08a1df715ca48040fc3ba1215a8e6d0c2c4da36367b283ce3f73b015cda9c39c"
+      },
+      {
+        "path": "render/color.js",
+        "sha256": "bbe42c3a7e98c17bff21970cb57065a1ba75820f394e2debea91f1018800a1f1"
+      },
+      {
+        "path": "render/geometry.js",
+        "sha256": "5441d2c4c0af385ffee8d1db709666aecde5343e5f25a84de6c149122444b88a"
+      },
+      {
+        "path": "render/png.js",
+        "sha256": "d94d469f5911aad56be7d5d6152acc2a2d5366017cd7d1385fd19bec53fb6959"
+      },
+      {
+        "path": "render/svg.js",
+        "sha256": "2b8043f641e78e9172f8b8ea52e40764026f8347f5d9d0481380517ccc272649"
+      },
+      {
+        "path": "structured-append.js",
+        "sha256": "6e29f677321ba8875acf3da557a5976a856fc1760e2d46038af7fbb23a9163ff"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "caseId": "authority-000",
+      "input": "https://example.com/01/04912345678904",
+      "expected": "https://example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-001",
+      "input": "https://EXAMPLE.com:00443/01/04912345678904",
+      "expected": "https://example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-002",
+      "input": "https://example.com:/01/04912345678904",
+      "expected": "https://example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-003",
+      "input": "https://example.com:000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000443/01/04912345678904",
+      "expected": "https://example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-004",
+      "input": "https://%65xample.com/01/04912345678904",
+      "expected": "https://example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-005",
+      "input": "https://%45XAMPLE.%63om/01/04912345678904",
+      "expected": "https://example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-006",
+      "input": "https://exa_mple.com/01/04912345678904",
+      "expected": "https://exa_mple.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-007",
+      "input": "https://-bad-.example/01/04912345678904",
+      "expected": "https://-bad-.example/01/04912345678904"
+    },
+    {
+      "caseId": "authority-008",
+      "input": "https://example..com/01/04912345678904",
+      "expected": "https://example..com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-009",
+      "input": "https://.example/01/04912345678904",
+      "expected": "https://.example/01/04912345678904"
+    },
+    {
+      "caseId": "authority-010",
+      "input": "https://0x+1/01/04912345678904",
+      "expected": "https://0x+1/01/04912345678904"
+    },
+    {
+      "caseId": "authority-011",
+      "input": "https://0+7/01/04912345678904",
+      "expected": "https://0+7/01/04912345678904"
+    },
+    {
+      "caseId": "authority-012",
+      "input": "https://0x/01/04912345678904",
+      "expected": "https://0.0.0.0/01/04912345678904"
+    },
+    {
+      "caseId": "authority-013",
+      "input": "https://0X/01/04912345678904",
+      "expected": "https://0.0.0.0/01/04912345678904"
+    },
+    {
+      "caseId": "authority-014",
+      "input": "https://0x./01/04912345678904",
+      "expected": "https://0.0.0.0/01/04912345678904"
+    },
+    {
+      "caseId": "authority-015",
+      "input": "https://1.0x/01/04912345678904",
+      "expected": "https://1.0.0.0/01/04912345678904"
+    },
+    {
+      "caseId": "authority-016",
+      "input": "https://1.2.3.0x/01/04912345678904",
+      "expected": "https://1.2.3.0/01/04912345678904"
+    },
+    {
+      "caseId": "authority-017",
+      "input": "https://127.1/01/04912345678904",
+      "expected": "https://127.0.0.1/01/04912345678904"
+    },
+    {
+      "caseId": "authority-018",
+      "input": "https://0177.0.0.1/01/04912345678904",
+      "expected": "https://127.0.0.1/01/04912345678904"
+    },
+    {
+      "caseId": "authority-019",
+      "input": "https://127.0.0.01/01/04912345678904",
+      "expected": "https://127.0.0.1/01/04912345678904"
+    },
+    {
+      "caseId": "authority-020",
+      "input": "https://2130706433/01/04912345678904",
+      "expected": "https://127.0.0.1/01/04912345678904"
+    },
+    {
+      "caseId": "authority-021",
+      "input": "https://0x7f000001/01/04912345678904",
+      "expected": "https://127.0.0.1/01/04912345678904"
+    },
+    {
+      "caseId": "authority-022",
+      "input": "https://0x7f.1/01/04912345678904",
+      "expected": "https://127.0.0.1/01/04912345678904"
+    },
+    {
+      "caseId": "authority-023",
+      "input": "https://127.0.0.1./01/04912345678904",
+      "expected": "https://127.0.0.1/01/04912345678904"
+    },
+    {
+      "caseId": "authority-024",
+      "input": "https://4294967295/01/04912345678904",
+      "expected": "https://255.255.255.255/01/04912345678904"
+    },
+    {
+      "caseId": "authority-025",
+      "input": "https://255.16777215/01/04912345678904",
+      "expected": "https://255.255.255.255/01/04912345678904"
+    },
+    {
+      "caseId": "authority-026",
+      "input": "https://255.255.65535/01/04912345678904",
+      "expected": "https://255.255.255.255/01/04912345678904"
+    },
+    {
+      "caseId": "authority-027",
+      "input": "https://255.255.255.255/01/04912345678904",
+      "expected": "https://255.255.255.255/01/04912345678904"
+    },
+    {
+      "caseId": "authority-028",
+      "input": "https://0/01/04912345678904",
+      "expected": "https://0.0.0.0/01/04912345678904"
+    },
+    {
+      "caseId": "authority-029",
+      "input": "https://00/01/04912345678904",
+      "expected": "https://0.0.0.0/01/04912345678904"
+    },
+    {
+      "caseId": "authority-030",
+      "input": "https://0.0.0.0/01/04912345678904",
+      "expected": "https://0.0.0.0/01/04912345678904"
+    },
+    {
+      "caseId": "authority-031",
+      "input": "https://[0:0:0:0:0:0:0:0]/01/04912345678904",
+      "expected": "https://[::]/01/04912345678904"
+    },
+    {
+      "caseId": "authority-032",
+      "input": "https://[0:0:0:0:0:0:0:1]/01/04912345678904",
+      "expected": "https://[::1]/01/04912345678904"
+    },
+    {
+      "caseId": "authority-033",
+      "input": "https://[2001:0db8:0:0:1:0:0:1]/01/04912345678904",
+      "expected": "https://[2001:db8::1:0:0:1]/01/04912345678904"
+    },
+    {
+      "caseId": "authority-034",
+      "input": "https://[::ffff:192.168.1.1]/01/04912345678904",
+      "expected": "https://[::ffff:c0a8:101]/01/04912345678904"
+    },
+    {
+      "caseId": "authority-035",
+      "input": "https://[1:0:0:2:0:0:3:4]/01/04912345678904",
+      "expected": "https://[1::2:0:0:3:4]/01/04912345678904"
+    },
+    {
+      "caseId": "authority-036",
+      "input": "https://[1:0:2:3:4:5:6:7]/01/04912345678904",
+      "expected": "https://[1:0:2:3:4:5:6:7]/01/04912345678904"
+    },
+    {
+      "caseId": "authority-037",
+      "input": "https://[1:2:3:4:5:6:0:0]/01/04912345678904",
+      "expected": "https://[1:2:3:4:5:6::]/01/04912345678904"
+    },
+    {
+      "caseId": "authority-038",
+      "input": "https://[::]/01/04912345678904",
+      "expected": "https://[::]/01/04912345678904"
+    },
+    {
+      "caseId": "authority-039",
+      "input": "https://[1::]/01/04912345678904",
+      "expected": "https://[1::]/01/04912345678904"
+    },
+    {
+      "caseId": "authority-040",
+      "input": "https://[1:2:3:4:5:6:7:8]/01/04912345678904",
+      "expected": "https://[1:2:3:4:5:6:7:8]/01/04912345678904"
+    },
+    {
+      "caseId": "authority-041",
+      "input": "https://user:pass@EXAMPLE.com:443/01/04912345678904",
+      "expected": "https://user:pass@example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-042",
+      "input": "https://user@@example.com/01/04912345678904",
+      "expected": "https://user%40@example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-043",
+      "input": "https://:pass@example.com/01/04912345678904",
+      "expected": "https://:pass@example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-044",
+      "input": "https://user:@example.com/01/04912345678904",
+      "expected": "https://user@example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-045",
+      "input": "https://@example.com/01/04912345678904",
+      "expected": "https://example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-046",
+      "input": "https://:@example.com/01/04912345678904",
+      "expected": "https://example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-047",
+      "input": "https://u:p:a@example.com/01/04912345678904",
+      "expected": "https://u:p%3Aa@example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-048",
+      "input": "https://u%41:p%3a@example.com/01/04912345678904",
+      "expected": "https://u%41:p%3a@example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-049",
+      "input": "https://u!$&'()*+,;=:@example.com/01/04912345678904",
+      "expected": "https://u!$&'()*+,%3B%3D@example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-050",
+      "input": "https://user%20x:pa%23ss@example.com/01/04912345678904",
+      "expected": "https://user%20x:pa%23ss@example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-051",
+      "input": "https://user:p@ss@example.com/01/04912345678904",
+      "expected": "https://user:p%40ss@example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-052",
+      "input": "https://u é:p😀@example.com/01/04912345678904",
+      "expected": "https://u%20%C3%A9:p%F0%9F%98%80@example.com/01/04912345678904"
+    },
+    {
+      "caseId": "authority-053",
+      "input": "https://4294967296/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-054",
+      "input": "https://999999999999999999999999999999/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-055",
+      "input": "https://0x100000000/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-056",
+      "input": "https://0xfffffffffffffffffffff/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-057",
+      "input": "https://040000000000/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-058",
+      "input": "https://256.0.0.1/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-059",
+      "input": "https://1.16777216/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-060",
+      "input": "https://1.2.65536/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-061",
+      "input": "https://1.2.3.256/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-062",
+      "input": "https://1.2.3.08/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-063",
+      "input": "https://1.2.3.4.5/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-064",
+      "input": "https://.1/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-065",
+      "input": "https://example.123/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-066",
+      "input": "https://0xg.0x/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-067",
+      "input": "https://%2fexample.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-068",
+      "input": "https://example%5c.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-069",
+      "input": "https://example%3a443/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-070",
+      "input": "https://example%40.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-071",
+      "input": "https://example%23.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-072",
+      "input": "https://example%3f.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-073",
+      "input": "https://example%5b.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-074",
+      "input": "https://example%5d.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-075",
+      "input": "https://example%5e.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-076",
+      "input": "https://example%7c.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-077",
+      "input": "https://example%20.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-078",
+      "input": "https://example%00.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-079",
+      "input": "https://example%25.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-080",
+      "input": "https://example%GG.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-081",
+      "input": "https://example%C0%AF.com/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-082",
+      "input": "https://example.com:65536/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-083",
+      "input": "https://example.com:999999999999999999/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-084",
+      "input": "https://[1::2::3]/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-085",
+      "input": "https://[1:2:3:4:5:6:7]/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-086",
+      "input": "https://[::ffff:192.000.2.1]/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-087",
+      "input": "https://[1.2.3.4::]/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "authority-088",
+      "input": "https://[::1]oops/01/04912345678904",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "previous-native-00",
+      "input": "https://0x/01/09506000134352",
+      "previousNativeLabel": "rejected host 0x",
+      "expected": "https://0.0.0.0/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-01",
+      "input": "https://0X/01/09506000134352",
+      "previousNativeLabel": "rejected host 0X",
+      "expected": "https://0.0.0.0/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-02",
+      "input": "https://1.0x/01/09506000134352",
+      "previousNativeLabel": "rejected host 1.0x",
+      "expected": "https://1.0.0.0/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-03",
+      "input": "https://0x./01/09506000134352",
+      "previousNativeLabel": "rejected host 0x.",
+      "expected": "https://0.0.0.0/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-04",
+      "input": "https://1.0X/01/09506000134352",
+      "previousNativeLabel": "rejected host 1.0X",
+      "expected": "https://1.0.0.0/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-05",
+      "input": "https://1.2.3.0x/01/09506000134352",
+      "previousNativeLabel": "rejected host 1.2.3.0x",
+      "expected": "https://1.2.3.0/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-06",
+      "input": "https://0x7f000001/01/09506000134352",
+      "previousNativeLabel": "rejected host 0x7f000001",
+      "expected": "https://127.0.0.1/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-07",
+      "input": "https://0177.0.0.1/01/09506000134352",
+      "previousNativeLabel": "rejected host 0177.0.0.1",
+      "expected": "https://127.0.0.1/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-08",
+      "input": "https://127.1/01/09506000134352",
+      "previousNativeLabel": "rejected host 127.1",
+      "expected": "https://127.0.0.1/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-09",
+      "input": "https://2130706433/01/09506000134352",
+      "previousNativeLabel": "rejected host 2130706433",
+      "expected": "https://127.0.0.1/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-10",
+      "input": "https://127.0.0.01/01/09506000134352",
+      "previousNativeLabel": "rejected host 127.0.0.01",
+      "expected": "https://127.0.0.1/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-11",
+      "input": "https://1.2.3.4./01/09506000134352",
+      "previousNativeLabel": "rejected host 1.2.3.4.",
+      "expected": "https://1.2.3.4/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-12",
+      "input": "https://user:password@example.com/01/09506000134352",
+      "previousNativeLabel": "rejected host user:password@example.com",
+      "expected": "https://user:password@example.com/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-13",
+      "input": "https://user@example.com/01/09506000134352",
+      "previousNativeLabel": "rejected host user@example.com",
+      "expected": "https://user@example.com/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-14",
+      "input": "https://%65xample.com/01/09506000134352",
+      "previousNativeLabel": "rejected host %65xample.com",
+      "expected": "https://example.com/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-15",
+      "input": "https://a..example/01/09506000134352",
+      "previousNativeLabel": "rejected host a..example",
+      "expected": "https://a..example/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-16",
+      "input": "https://-bad.example/01/09506000134352",
+      "previousNativeLabel": "rejected host -bad.example",
+      "expected": "https://-bad.example/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-17",
+      "input": "https://bad-.example/01/09506000134352",
+      "previousNativeLabel": "rejected host bad-.example",
+      "expected": "https://bad-.example/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-18",
+      "input": "https://bad_name.example/01/09506000134352",
+      "previousNativeLabel": "rejected host bad_name.example",
+      "expected": "https://bad_name.example/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-19",
+      "input": "https:///01/09506000134352",
+      "previousNativeLabel": "rejected host ",
+      "expected": {
+        "throws": {
+          "code": "INVALID_GS1"
+        }
+      }
+    },
+    {
+      "caseId": "previous-native-20",
+      "input": "https://example.com:/01/09506000134352",
+      "previousNativeLabel": "rejected port ",
+      "expected": "https://example.com/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-21",
+      "input": "https://example.com\\x/01/09506000134352",
+      "previousNativeLabel": "rejected URI",
+      "expected": "https://example.com/x/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-22",
+      "input": " https://example.com/01/09506000134352",
+      "previousNativeLabel": "rejected URI",
+      "expected": "https://example.com/01/09506000134352"
+    },
+    {
+      "caseId": "previous-native-23",
+      "input": "https://example.com/01/09506000134352?x=raw space",
+      "previousNativeLabel": "rejected URI",
+      "expected": "https://example.com/01/09506000134352?x=raw+space"
+    }
+  ]
+}

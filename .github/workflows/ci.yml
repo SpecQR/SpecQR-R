@@ -60,6 +60,7 @@ jobs:
         run: |
           python3 "$CI_SOURCE/scripts/install_ci_tools.py" self-test 2>&1 | tee "$CI_EVIDENCE/installer-selftests.log"
           python3 "$CI_SOURCE/scripts/test_verify_native.py" 2>&1 | tee "$CI_EVIDENCE/harness-selftests.log"
+          python3 "$CI_SOURCE/scripts/test_verify_gs1.py" 2>&1 | tee "$CI_EVIDENCE/gs1-harness-selftests.log"
 
       - name: Install R source-build prerequisites from official Ubuntu repositories
         id: builddeps
@@ -137,6 +138,10 @@ jobs:
       - name: Shared regressions and strict authority vectors
         if: ${{ !cancelled() && steps.oracles.outcome == 'success' }}
         run: python3 "$CI_SOURCE/scripts/verify_shared_regressions.py" --rscript "$RSCRIPT_BIN" --python-deps "$CI_TOOLS/python" --output "$CI_EVIDENCE/shared-regressions.json" 2>&1 | tee "$CI_EVIDENCE/shared-regressions.log"
+
+      - name: Complete request-bound GS1 compatibility corpus
+        if: ${{ !cancelled() && steps.stage.outcome == 'success' && steps.rtool.outcome == 'success' }}
+        run: python3 "$CI_SOURCE/scripts/verify_gs1.py" --rscript "$RSCRIPT_BIN" --output "$CI_EVIDENCE/gs1" 2>&1 | tee "$CI_EVIDENCE/gs1.log"
 
       - name: Recheck staged source after every verification step
         if: ${{ !cancelled() && steps.stage.outcome == 'success' }}

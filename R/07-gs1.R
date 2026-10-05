@@ -262,45 +262,115 @@ validate_gs1_element_string <- function(value, context = "element-string", colle
   if (length(parts) == 2L) return(isTRUE(.gs1_ipv6_side(parts[1L]) + .gs1_ipv6_side(parts[2L], TRUE) < 8L))
   FALSE
 }
-.gs1_host_fail <- function() .gs1_fail("Unsupported host profile; use ASCII DNS, canonical dotted IPv4, or RFC IPv6 without credentials", "GS1_DIGITAL_LINK_UNSUPPORTED_HOST")
+.gs1_host_fail <- function() .gs1_fail("Unsupported host profile; use an ASCII URL host or RFC IPv6", "GS1_DIGITAL_LINK_UNSUPPORTED_HOST")
+.gs1_ipv4_number <- function(value) {
+  if (!nzchar(value)) return(-1)
+  radix <- 10
+  if (nchar(value) >= 2L && tolower(substr(value, 1L, 2L)) == "0x") { radix <- 16; value <- substring(value, 3L) }
+  else if (nchar(value) >= 2L && startsWith(value, "0")) { radix <- 8; value <- substring(value, 2L) }
+  number <- 0
+  for (b in as.integer(charToRaw(tolower(value)))) {
+    digit <- if (b >= 48L && b <= 57L) b - 48L else if (b >= 97L && b <= 102L) b - 87L else -1L
+    if (digit < 0L || digit >= radix) return(-1)
+    # All arithmetic is exactly representable; 2^32 is a saturating sentinel.
+    if (number < 4294967296) number <- if (number > floor((4294967295 - digit) / radix)) 4294967296 else number * radix + digit
+  }
+  number
+}
+.gs1_normalize_ipv4_host <- function(host) {
+  parts <- .gs1_split(host, ".", 1025L)
+  if (length(parts) > 1L && !nzchar(parts[length(parts)])) parts <- parts[-length(parts)]
+  last <- parts[length(parts)]
+  if (!.gs1_digits(last) && .gs1_ipv4_number(last) < 0) return(host)
+  if (length(parts) > 4L) .gs1_host_fail()
+  numbers <- vapply(parts, .gs1_ipv4_number, numeric(1))
+  if (any(numbers < 0 | numbers > 4294967295) || (length(numbers)>1L && any(numbers[-length(numbers)] > 255))) .gs1_host_fail()
+  if (numbers[length(numbers)] >= 256^(5L-length(numbers))) .gs1_host_fail()
+  address <- numbers[length(numbers)]
+  if (length(numbers)>1L) for (i in seq_len(length(numbers)-1L)) address <- address + numbers[i] * 256^(4L-i)
+  paste0(vapply(c(16777216,65536,256,1),function(d) as.character(floor(address/d)%%256),""),collapse=".")
+}
+.gs1_ipv6_groups <- function(side) {
+  groups <- integer()
+  if (!nzchar(side)) return(groups)
+  for (part in .gs1_split(side, ":", 1025L)) {
+    if (grepl(".",part,fixed=TRUE)) { b<-as.integer(.gs1_split(part,".",5L));groups<-c(groups,b[1L]*256L+b[2L],b[3L]*256L+b[4L]) }
+    else groups<-c(groups,strtoi(part,16L))
+  }
+  groups
+}
+.gs1_normalize_ipv6 <- function(address) {
+  # Complete syntax and embedded dotted IPv4 validation precede this function.
+  sides<-.gs1_split(address,"::",3L);groups<-.gs1_ipv6_groups(sides[1L])
+  if(length(sides)==2L){right<-.gs1_ipv6_groups(sides[2L]);groups<-c(groups,rep(0L,8L-length(groups)-length(right)),right)}
+  best_start<-0L;best_size<-1L;at<-1L
+  while(at<=length(groups)){
+    if(groups[at]!=0L){at<-at+1L;next}
+    start<-at
+    while(at<=length(groups)&&groups[at]==0L)at<-at+1L
+    if(at-start>best_size){best_start<-start;best_size<-at-start}
+  }
+  pieces<-sprintf("%x",groups)
+  if(best_start==0L)return(paste0(pieces,collapse=":"))
+  left<-if(best_start>1L)paste0(pieces[seq_len(best_start-1L)],collapse=":")else""
+  stop<-best_start+best_size
+  right<-if(stop<=length(pieces))paste0(pieces[seq.int(stop,length(pieces))],collapse=":")else""
+  paste0(left,"::",right)
+}
+.gs1_url_encode <- function(value, userinfo=FALSE) {
+  bytes<-as.integer(charToRaw(enc2utf8(value)))
+  forbidden<-if(userinfo)c(34L,35L,47L,58L,59L,60L,61L,62L,63L,64L,91L,92L,93L,94L,96L,123L,124L,125L)else c(34L,35L,60L,62L,63L,94L,96L,123L,125L)
+  escaped<-bytes<=32L|bytes>=127L|bytes%in%forbidden
+  out<-rawToChar(as.raw(bytes),multiple=TRUE);out[escaped]<-sprintf("%%%02X",bytes[escaped]);paste0(out,collapse="")
+}
 .gs1_authority <- function(value, scheme) {
-  if (!nzchar(value) || nchar(value, type = "bytes") > 1024L || any(as.integer(charToRaw(value)) > 127L) || grepl("[@%]", value)) .gs1_host_fail()
-  port <- NULL
-  if (startsWith(value, "[")) {
-    close <- regexpr("]", value, fixed = TRUE)[1L]; if (close < 0L) .gs1_host_fail()
-    address <- substr(value, 2L, close - 1L); if (!.gs1_ipv6(address)) .gs1_host_fail()
-    host <- paste0("[", tolower(address), "]"); tail <- substring(value, close + 1L)
-    if (nzchar(tail)) { if (!startsWith(tail, ":")) .gs1_host_fail(); port <- substring(tail, 2L) }
-  } else {
-    at <- regexpr(":", value, fixed = TRUE)[1L]
-    host <- tolower(if (at < 0L) value else substr(value, 1L, at - 1L)); if (at >= 0L) port <- substring(value, at + 1L)
-    dns <- sub("\\.$", "", host)
-    if (!nzchar(dns) || nchar(dns) > 253L) .gs1_host_fail()
-    labels <- .gs1_split(dns, ".", 1025L)
-    for (label in labels) if (nchar(label) < 1L || nchar(label) > 63L || !grepl("^[a-z0-9]([a-z0-9-]*[a-z0-9])?$", label)) .gs1_host_fail()
-    tail <- labels[length(labels)]
-    if ((.gs1_digits(tail) || grepl("^0x[0-9a-f]*$", tail)) && !.gs1_ipv4(host)) .gs1_host_fail()
+  if (!nzchar(value) || nchar(value,type="bytes")>1024L) .gs1_host_fail()
+  userinfo<-"";ats<-gregexpr("@",value,fixed=TRUE)[[1L]];at_sign<-max(ats)
+  if(at_sign>0L){
+    raw_userinfo<-substr(value,1L,at_sign-1L);.gs1_decode(raw_userinfo)
+    colon<-regexpr(":",raw_userinfo,fixed=TRUE)[1L]
+    username<-.gs1_url_encode(if(colon<0L)raw_userinfo else substr(raw_userinfo,1L,colon-1L),TRUE)
+    password<-if(colon<0L)""else .gs1_url_encode(substring(raw_userinfo,colon+1L),TRUE)
+    if(nzchar(username)||nzchar(password))userinfo<-paste0(username,if(nzchar(password))paste0(":",password)else"","@")
+    value<-substring(value,at_sign+1L)
   }
-  if (!is.null(port)) {
-    if (!grepl("^[0-9]{1,5}$", port) || as.numeric(port) > 65535) .gs1_fail("GS1 port must contain decimal digits from 0 to 65535", "GS1_DIGITAL_LINK_INVALID_URI")
-    number <- as.integer(port)
-    if (!((scheme == "http" && number == 80L) || (scheme == "https" && number == 443L))) host <- paste0(host, ":", number)
+  port<-NULL
+  if(startsWith(value,"[")){
+    close<-regexpr("]",value,fixed=TRUE)[1L];if(close<0L).gs1_host_fail()
+    address<-substr(value,2L,close-1L);if(!.gs1_ipv6(address)).gs1_host_fail()
+    host<-paste0("[",.gs1_normalize_ipv6(address),"]");tail<-substring(value,close+1L)
+    if(nzchar(tail)){if(!startsWith(tail,":" )).gs1_host_fail();port<-substring(tail,2L)}
+  }else{
+    at<-regexpr(":",value,fixed=TRUE)[1L];raw_host<-if(at<0L)value else substr(value,1L,at-1L)
+    if(at>=0L)port<-substring(value,at+1L)
+    host<-.gs1_decode(raw_host);b<-as.integer(charToRaw(host))
+    # Full UTS46 is outside this dependency-free ASCII-host implementation.
+    if(!nzchar(host)||any(b<=32L|b>=127L|b%in%c(35L,37L,47L,58L,60L,62L,63L,64L,91L,92L,93L,94L,124L))).gs1_host_fail()
+    host<-.gs1_normalize_ipv4_host(tolower(host))
   }
-  host
+  if(!is.null(port)&&nzchar(port)){
+    if(!.gs1_digits(port)).gs1_fail("GS1 port must contain decimal digits from 0 to 65535","GS1_DIGITAL_LINK_INVALID_URI")
+    number<-0
+    for(b in as.integer(charToRaw(port))){number<-number*10+b-48L;if(number>65535).gs1_fail("GS1 port must be from 0 to 65535","GS1_DIGITAL_LINK_INVALID_URI")}
+    if(!((scheme=="http"&&number==80)||(scheme=="https"&&number==443)))host<-paste0(host,":",number)
+  }
+  paste0(userinfo,host)
 }
 .gs1_url <- function(value) {
-  s <- .gs1_text(value, "GS1 Digital Link URI")
-  if (grepl("#", s, fixed = TRUE)) .gs1_fail("GS1 Digital Link URI must not include a fragment", "GS1_DIGITAL_LINK_FRAGMENT_NOT_ALLOWED")
-  b <- as.integer(charToRaw(s))
-  if (any(b <= 32L | b == 127L | b == 92L)) .gs1_fail("GS1 URI must be absolute http or https without whitespace or backslashes", "GS1_DIGITAL_LINK_INVALID_URI")
-  m <- regmatches(s, regexec("^(https?)://([^/?]*)(.*)$", s, ignore.case = TRUE))[[1L]]
-  if (!length(m)) .gs1_fail("GS1 URI must be an absolute http or https URL", "GS1_DIGITAL_LINK_INVALID_URI")
-  scheme <- tolower(m[2L]); authority <- .gs1_authority(m[3L], scheme); rest <- m[4L]
-  at <- regexpr("?", rest, fixed = TRUE)[1L]
-  path <- if (at < 0L) rest else substr(rest, 1L, at - 1L); query <- if (at < 0L) NULL else substring(rest, at + 1L)
-  for (part in .gs1_split(path, "/", 2L * GS1_MAX_ELEMENTS + 1L)) .gs1_decode(part)
-  if (!is.null(query)) for (pair in .gs1_split(query, "&", GS1_MAX_ELEMENTS)) .gs1_query_pair(pair)
-  list(scheme = scheme, authority = authority, path = path, query = query)
+  s<-.gs1_text(value,"GS1 Digital Link URI")
+  # Trim edge C0/space and remove URL-ignored TAB/LF/CR, not query backslashes.
+  s<-gsub("^[\\x01-\\x20]+|[\\x01-\\x20]+$","",s,perl=TRUE)
+  s<-gsub("[\t\r\n]","",s)
+  fragment<-regexpr("#",s,fixed=TRUE)[1L];empty_fragment<-fragment>0L
+  if(fragment>0L){if(fragment!=nchar(s)).gs1_fail("GS1 Digital Link URI must not include a fragment","GS1_DIGITAL_LINK_FRAGMENT_NOT_ALLOWED");s<-substr(s,1L,fragment-1L)}
+  at<-regexpr("?",s,fixed=TRUE)[1L];head<-if(at<0L)s else substr(s,1L,at-1L);query<-if(at<0L)NULL else substring(s,at+1L)
+  head<-gsub("\\","/",head,fixed=TRUE)
+  m<-regmatches(head,regexec("^(https?):/*([^/]*)(.*)$",head,ignore.case=TRUE))[[1L]]
+  if(!length(m)).gs1_fail("GS1 URI must be an absolute http or https URL","GS1_DIGITAL_LINK_INVALID_URI")
+  scheme<-tolower(m[2L]);authority<-.gs1_authority(m[3L],scheme);path<-.gs1_url_encode(m[4L])
+  for(part in .gs1_split(path,"/",2L*GS1_MAX_ELEMENTS+1L)).gs1_decode(part)
+  if(!is.null(query))for(pair in .gs1_split(query,"&",GS1_MAX_ELEMENTS)).gs1_query_pair(pair)
+  list(scheme=scheme,authority=authority,path=path,query=query,empty_fragment=empty_fragment)
 }
 .gs1_base <- function(url) paste0(url$scheme, "://", url$authority)
 .gs1_primary <- function(ai) { if (!is.character(ai) || length(ai) != 1L || is.na(ai) || !ai %in% .gs1_primary_ais || is.object(ai) || !is.null(dim(ai))) .gs1_fail("GS1 primary_ai must be one of 00, 01, or 414"); ai }
@@ -335,7 +405,7 @@ create_gs1_digital_link <- function(elements, base_url = NULL, primary_ai = "01"
   primary <- .gs1_primary(primary_ai)
   if (is.null(base_url)) .gs1_fail("GS1 Digital Link base_url is required")
   base <- .gs1_url(base_url)
-  if (!is.null(base$query)) .gs1_fail("GS1 Digital Link base_url must not include query components")
+  if (!is.null(base$query) && nzchar(base$query)) .gs1_fail("GS1 Digital Link base_url must not include query components")
   paths <- NULL
   if (!is.null(path_ais)) {
     paths <- character()
@@ -358,6 +428,7 @@ create_gs1_digital_link <- function(elements, base_url = NULL, primary_ai = "01"
   for (part in .gs1_split(prefix, "/", 2L * GS1_MAX_ELEMENTS + 1L)) if (.gs1_decode(part) %in% .gs1_primary_ais) .gs1_fail("GS1 base URL normalized path must not contain a primary AI component, including percent-encoded equivalents", "GS1_INVALID_DIGITAL_LINK_PLACEMENT")
   out <- paste0(.gs1_base(base), prefix, paste0(vapply(path, function(e) paste0("/", .gs1_encode(e$ai), "/", .gs1_encode(e$value)), ""), collapse = ""))
   if (length(query)) out <- paste0(out, "?", paste0(vapply(query, function(e) paste0(.gs1_encode(e$ai, TRUE), "=", .gs1_encode(e$value, TRUE)), ""), collapse = "&"))
+  if (base$empty_fragment) out <- paste0(out, "#")
   .gs1_text(out, "GS1 Digital Link output")
 }
 .gs1_parse_link <- function(url, primary_ai, unknown_query) {

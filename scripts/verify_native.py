@@ -36,7 +36,7 @@ def main():
   units={}
   for key,pattern in unit_patterns.items():
    match=re.search(pattern,unittext);require(match is not None,'Missing unit group '+key);units[key]=int(match.group(1))
-  require(units=={'core':93162,'api':412,'renderGs1':444,'json':87},'Unit counts differ from the pinned package suite')
+  require(units=={'core':93162,'api':412,'renderGs1':448,'json':87},'Unit counts differ from the pinned package suite')
   report['unitCounts']=units;report['unitAssertions']=sum(units.values())
   consumer=out/'consumer.R';consumer.write_text('library(specqr)\nstopifnot(identical(getNamespaceImports("specqr"),list(base=TRUE)))\nq<-generate(as.raw(c(0,29,255)))\nstopifnot(is.logical(q$matrix),is.raw(to_png(q,scale=1)))\nfor(f in list.files(system.file("examples",package="specqr"),full.names=TRUE))source(f)\ncat("Installed consumer passed\\n")\n')
   run('installed-consumer',[rscript,'--vanilla',consumer],cwd=out,env=env)

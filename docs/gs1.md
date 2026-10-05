@@ -54,25 +54,34 @@ Custom iterator protocols are not supported.
 
 `create_gs1_digital_link`, `parse_gs1_digital_link`,
 `validate_gs1_digital_link`, and `normalize_gs1_digital_link` never fetch URLs.
-They use an intentionally strict profile, not universal WHATWG URL or IDNA
-normalization:
+They use a bounded HTTP(S) URL adapter with strict payload decoding. This is
+not complete WHATWG URL or IDNA/UTS46 conformance:
 
-* Absolute `http://` or `https://` only; no raw whitespace, control bytes,
-  backslashes, fragments (including an empty fragment), or user credentials
-* ASCII DNS labels of at most 63 bytes, full name at most 253 bytes; letters,
-  digits and internal hyphens only. DNS case is lowered; a DNS trailing dot is
-  retained
-* Canonical four-component decimal IPv4 only. Integer, short, octal,
-  hexadecimal, leading-zero and trailing-dot IPv4 aliases are rejected. This
-  includes `0x`, `0X`, `1.0x`, `example.0x`, `0x.`, `1.0X`, and `1.2.3.0x`
-* Bracketed RFC IPv6, including canonical dotted-decimal IPv4 tails, is accepted;
-  hexadecimal case is lowered. IPv6 is validated without DNS or socket access,
-  and is not recompressed. Zone IDs and percent-encoded hosts are rejected
-* Ports must have 1–5 decimal digits and be 0–65535; default HTTP/HTTPS ports
-  are omitted and other ports rendered in decimal
-* Percent escapes and decoded UTF-8 are strict throughout path and query.
-  Unicode resolver-prefix and unknown-query data preserve exact UTF-8, with no
-  Unicode normalization or surrogate replacement
+* HTTP(S) slash spellings and authority/path backslashes are repaired; edge
+  ASCII C0/space is trimmed and TAB/LF/CR removed. A query backslash remains data
+* Nonempty fragments reject. Empty `#` is accepted, retained by creation and
+  removed by normalization. Empty builder `?` is replaced; nonempty query rejects
+* ASCII reg-name hosts are lowercased, including harmless punctuation/empty DNS
+  labels accepted by browser URL parsing. ASCII percent-encoded hosts decode
+  strictly; encoded authority delimiters and empty hosts reject
+* Numeric IPv4 accepts short, octal, hexadecimal and integer aliases with checked
+  accumulation, exact component bounds and canonical dotted-decimal output.
+  `0x`, `0X`, `1.0x`, `0x.`, `1.0X`, and `1.2.3.0x` are valid aliases;
+  `example.0x`, malformed numeric candidates and overflow reject
+* Bracketed RFC IPv6, including valid dotted-decimal tails, uses lowercase hex
+  groups and the first longest zero run. Zone identifiers reject
+* Credentials are escaped and preserved as URL text, without fetching or
+  authentication; diagnostics never echo extra credential data
+* Empty ports are omitted. Decimal ports use checked 0–65535 bounds, allow
+  leading zeros and omit HTTP/HTTPS defaults
+* Percent escapes and decoded UTF-8 remain strict in host, credentials, path
+  and query. Invalid UTF-8 and decoded NUL reject; R strings cannot contain NUL
+* Unicode/IDNA hostname conversion remains outside this base-R-only adapter.
+  No partial UTS46 or IDNA implementation is claimed. An ASCII hostname can be
+  supplied by an application that has independently resolved its IDNA policy
+
+The adapter does not validate DNS existence, reachability, URL trust, or SSRF
+safety. Parsing performs no networking.
 
 Primary AIs are `00`, `01` (builder default), and `414`. Qualifiers `10`, `21`,
 `22` can appear in the path only after `01`. Other supported AIs are query data.
@@ -86,7 +95,8 @@ The builder normalizes resolver-prefix dot segments, then rejects any surviving
 prefix component that decodes once to a primary AI, including `%30%31`. This
 prevents generated links from having an ambiguous payload start. Primary-looking
 components removed by preceding dot normalization are allowed. Other prefix
-components, including existing escapes and raw UTF-8, are preserved.
+components preserve existing escapes; raw UTF-8 and path characters are percent
+encoded without changing their decoded value.
 
 Query decoding uses form semantics (`+` is a space), with strict percent/UTF-8
 validation. `unknown_query="preserve"` retains non-GS1 keys, duplicates, order,
@@ -110,3 +120,33 @@ Text is valid UTF-8 and at most 1,000,000 UTF-16 code units (with a preliminary
 1,000,000 bytes; valid AI/value text is ASCII. Element and query pair counts are
 limited to 16,384, and path component counts to 32,769. Limits are checked before
 unbounded iteration, numeric parsing, or large output growth.
+
+## URL 互換性の回復
+
+従来の狭い URL 受理範囲を見直し、TypeScript の固定ソース
+`16efc6c0a8e397c9df3d051d20fce6c1eebdfad7` が受理する 77 件と、IPv6 の
+正規化 3 件を回復しました。通常の QR の符号化・行列・描画・FNC1 の意味や
+実行時依存関係は変更していません。無害な URL 表記の受理範囲を広げる変更です。
+
+元の 1,411 入力は変更せず、現在の TypeScript を実行して得た型付き期待値と
+照合します。R で残る 168 差分は診断 132、不正 percent/UTF-8/NUL 20、
+Unicode/IDNA host 12、raw Digital Link primary 検査 2、安全な dot query
+生成 2 です。診断 5 件の順序変更は固定した旧 Nim による意味的 witness で
+独立に確認しています。これらをすべて同じ「不正 URL」とは扱いません。
+
+検証は 80 正例、既存 49 authority/Digital Link 操作、追加 113 authority
+対照例と process の失敗・余分な出力・stderr・型不一致を明示的に検査します。
+期待値を候補実装の出力から作っていません。
+
+## Additional URL serialization evidence
+
+The independent 139-positive extension also gates raw caret path serialization
+as `%5E`, including resolver-prefix builder input. Caret escaping is a URL
+serialization correction; decoded GS1 payload bytes do not change.
+
+Outside the original 1,411 inputs, inherited base-path cleanup collapses duplicate
+separators (`/a//b` becomes `/a/b`), unlike browser URL serialization. ASCII
+reg-name support does not fully validate ACE (`xn--`) labels: some names accepted
+here are rejected by a UTS46-aware parser. This is an explicit incomplete IDNA
+validation contract, not evidence that such names are valid or safe destinations.
+No partial IDNA decoder or new networking dependency is introduced.
