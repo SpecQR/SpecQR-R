@@ -1,114 +1,114 @@
 # Linux continuous integration
 
-The checked-in workflow defines two Ubuntu 24.04 x86-64 lanes: the minimum
-supported **R 4.5.3** and **R 4.6.1**, the stable release selected on 2026-10-04.
-It builds the official CRAN source distributions rather than using a moving
-`release` alias or binaries compiled for a newer system C library. The workflow
-has not yet been executed on GitHub-hosted runners. Local verification and
-installer self-tests are separate evidence; neither is a hosted CI pass.
-Windows, macOS and other architectures are not claimed as verified.
+リポジトリに含まれる workflow は Ubuntu 24.04 x86-64 の 2 つの実行系統を定義しています。
+対象は最小対応版の **R 4.5.3** と、2026-10-04 に安定版として選定した **R 4.6.1** です。
+更新される `release` エイリアスや、より新しいシステム C ライブラリ向けにコンパイルされた
+バイナリは使わず、公式 CRAN ソース配布物をビルドします。この workflow は
+GitHub がホストする runner ではまだ実行していません。ローカル検証と
+インストーラーの自己テストは別の証拠であり、いずれもホストされた CI の合格を示しません。
+Windows、macOS、その他のアーキテクチャを検証済みとはしていません。
 
-Both lanes require the native unit suite, complete reference corpus, CLI
-contract, package build/check/install, and clean offline installed-package
-consumers implemented by `scripts/verify_native.py`. Separate required steps
-exercise ZXing-C++ 3.1.1 actual PNG decoding, ZXing Java 3.5.4 PNG and matrix
-decoding, independent librsvg SVG rasterization and PNG pixel comparisons,
-and shared regressions including strict Digital Link authorities. Harness
-self-tests and installer security/failure fixtures are mandatory too.
+両系統では、`scripts/verify_native.py` が実装するネイティブ単体テスト一式、
+完全な参照コーパス、CLI の契約、パッケージのビルド・チェック・インストール、
+クリーンなオフライン環境でのインストール済みパッケージの利用検証を必須にしています。
+別の必須ステップでは、ZXing-C++ 3.1.1 による実際の PNG デコード、ZXing Java 3.5.4 による
+PNG と行列のデコード、独立した librsvg による SVG のラスター化と PNG のピクセル比較、
+厳格な Digital Link authority の検証を含む共有回帰テストを実行します。
+ハーネスの自己テストと、インストーラーのセキュリティ・失敗系 fixture も必須です。
 
-Decoder scales retain their reviewed defaults: C++ uses 8 and Java uses 3.
-These lanes do not assert that Java's detector passes at the library's default
-scale 8. Logs and JSON receipts give the actual assertions and counts for each
-run; a version matrix is not a substitute for those receipts.
+デコーダーのスケールはレビュー済みの既定値を維持し、C++ は 8、Java は 3 を使います。
+これらの実行系統は、ライブラリの既定スケール 8 で Java の検出器が合格することを主張しません。
+ログと JSON 記録には、各実行で実際に確認した内容と件数を残します。
+バージョンの対応表は、これらの記録の代わりにはなりません。
 
 ## Pins and runtime dependencies
 
-The installer verifies a downloaded archive before extracting or executing it.
-The accepted R source SHA-256 digests are:
+インストーラーはダウンロードしたアーカイブを展開・実行する前に検証します。
+受け付ける R ソースの SHA-256 ダイジェストは次のとおりです。
 
 - R 4.5.3: `aa5c1ed4293c7271ac513d654670356ac0e8a6ad5e42be014365d11150b5b8f2`
 - R 4.6.1: `4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4`
 
-They come from the official [R 4.5.3 announcement](https://stat.ethz.ch/pipermail/r-announce/2026/000718.html)
-and [R 4.6.1 announcement](https://stat.ethz.ch/pipermail/r-announce/2026/000727.html).
-The exact CRAN download URL, expected and actual digest, build commands, logs,
-`config.log`, runtime probe and bundled recommended-package archive digests
-are retained. Extraction rejects paths or links outside the R source tree,
-duplicate members, special files and oversized archives before writing files.
+これらは公式の [R 4.5.3 の告知](https://stat.ethz.ch/pipermail/r-announce/2026/000718.html)と
+[R 4.6.1 の告知](https://stat.ethz.ch/pipermail/r-announce/2026/000727.html)に記載された値です。
+正確な CRAN ダウンロード URL、期待値と実際のダイジェスト、ビルドコマンド、ログ、
+`config.log`、実行環境のプローブ、同梱の推奨パッケージのアーカイブのダイジェストを保持します。
+展開では、R ソースツリーの外を指すパスやリンク、重複した項目、特殊ファイル、
+上限を超えるアーカイブを、ファイルを書き込む前に拒否します。
 
-The build includes the recommended packages already contained in the pinned
-R source archive, including `codetools` for `R CMD check`. It fails if bundled
-`codetools` is absent; it does not fetch a replacement from a package repository.
-No contributed R package is a SpecQR runtime dependency. R's recommended
-packages, compilers, Python, ZXing, Pillow, Java and librsvg are development or
-verification tools, not encoder runtime dependencies. The CI R build disables
-X11, Tcl/Tk, readline and system bitmap devices; SpecQR's PNG and SVG encoders
-remain pure R and do not use these devices.
+ビルドには、固定した R ソースアーカイブにすでに含まれる推奨パッケージを使い、
+`codetools`（`R CMD check` 用）も含めます。同梱の `codetools` がなければ失敗し、
+パッケージリポジトリから代替を取得することはありません。
+SpecQR は実行時に R の contributed package へ依存しません。R の推奨パッケージ、
+コンパイラー、Python、ZXing、Pillow、Java、librsvg は開発または検証用のツールであり、
+エンコーダーの実行時依存ではありません。CI の R ビルドでは X11、Tcl/Tk、readline、
+システムのビットマップデバイスを無効にします。SpecQR の PNG と SVG のエンコーダーは
+引き続き純粋な R 実装であり、これらのデバイスを使いません。
 
-`requirements-ci.txt` pins test-only binary wheels by version and SHA-256 for
-Linux x86-64 / CPython 3.12. Pip requires hashes, disallows source builds and
-dependency resolution, and installs into a temporary directory. The ZXing Java
-jar is pinned by SHA-256. Official Ubuntu apt repositories provide the
-compiler/build libraries, Java 17 and librsvg; their installed package versions
-are recorded, not frozen. The Ubuntu runner image and its Python 3.12 can
-receive patches. This is source-hash-bound verification, not a claim of
-bit-for-bit reproducible R toolchain binaries.
+`requirements-ci.txt` は Linux x86-64 / CPython 3.12 向けのテスト専用バイナリ wheel を
+バージョンと SHA-256 で固定します。Pip はハッシュを必須とし、ソースビルドと依存関係の解決を
+許可せず、一時ディレクトリへインストールします。ZXing Java の jar は SHA-256 で固定します。
+コンパイラー・ビルド用ライブラリ、Java 17、librsvg は Ubuntu 公式 apt リポジトリから取得し、
+インストールしたパッケージのバージョンを記録しますが、固定はしません。
+Ubuntu runner イメージとその Python 3.12 にはパッチが適用される場合があります。
+これはソースのハッシュに結び付けた検証であり、R ツールチェーンのバイナリが
+ビット単位で再現可能だと主張するものではありません。
 
-Official actions are commit-pinned to
-[checkout v7.0.1](https://github.com/actions/checkout/commit/3d3c42e5aac5ba805825da76410c181273ba90b1)
-and [upload-artifact v7.0.1](https://github.com/actions/upload-artifact/commit/043fb46d1a93c77aae656e7c1c64a875d1fc6a0a),
-verified against their release targets; both use Node 24. The token has only
-`contents: read`. There is no persistent checkout credential, cache, secret,
-OIDC grant, repository mutation or release publication. Artifact upload uses
-GitHub's per-job artifact service.
+公式 action は
+[checkout v7.0.1](https://github.com/actions/checkout/commit/3d3c42e5aac5ba805825da76410c181273ba90b1) と
+[upload-artifact v7.0.1](https://github.com/actions/upload-artifact/commit/043fb46d1a93c77aae656e7c1c64a875d1fc6a0a) の
+コミットに固定し、それぞれのリリース先と照合済みです。いずれも Node 24 を使います。
+トークンの権限は `contents: read` のみです。永続的な checkout 認証情報、キャッシュ、
+シークレット、OIDC の権限付与、リポジトリの変更、リリースの公開はありません。
+成果物のアップロードには GitHub のジョブごとの成果物サービスを使います。
 
 ## Source identity and intentional changes
 
-`prepare_ci.py stage` checks the committed `SOURCE-SHA256.json`, copies its
-validated inventory to a new temporary directory, and creates a deterministic
-source ZIP. The verifiers run from the staged source, bind their receipts to
-its hashes and check the archive passed to `verify_native.py`. The manifest
-includes the workflow, helpers, test lockfile and documentation. CI never
-refreshes the manifest to make unexpected changes pass. A final independent
-manifest check revalidates the staged source after all verification steps,
-including when an earlier check failed.
+`prepare_ci.py stage` はコミット済みの `SOURCE-SHA256.json` を確認し、検証済みの一覧にある
+ファイルを新しい一時ディレクトリへコピーして、決定的なソース ZIP を作成します。
+検証ツールはステージしたソースから実行し、記録をそのハッシュに結び付け、
+`verify_native.py` に渡したアーカイブを確認します。manifest には workflow、補助ツール、
+テスト用 lockfile、文書を含みます。CI は予期しない変更を合格させるために manifest を
+更新しません。すべての検証ステップの後に、独立した最後の manifest 検査で
+ステージしたソースを再検証します。それ以前の検査が失敗した場合も実行します。
 
-After an intentional, reviewed edit, maintainers regenerate it explicitly:
+意図した編集をレビューした後、保守担当者が次のコマンドで明示的に再生成します。
 
 ```sh
 PYTHONDONTWRITEBYTECODE=1 python3 scripts/prepare_ci.py manifest
 python3 scripts/prepare_ci.py stage --output /tmp/specqr-r-stage
 ```
 
-The explicit `manifest` command rewrites `SOURCE-SHA256.json` in place. Review
-and commit that file together with the intended edits. Use a fresh stage
-destination. A digest binds evidence to bytes; it does not authenticate the
-publisher. A later intentional change has a new source manifest/archive hash.
+明示的な `manifest` コマンドは `SOURCE-SHA256.json` をその場で書き換えます。
+意図した編集とともに、このファイルもレビューしてコミットしてください。
+ステージ先には新しいディレクトリを使ってください。ダイジェストは証拠とバイト列を
+結び付けますが、公開者を認証するものではありません。その後に意図した変更を加えると、
+ソース manifest とアーカイブのハッシュも新しくなります。
 
 ## Evidence, failures and required checks
 
-Each lane allows up to 180 minutes for source-building R and interpreted-R
-verification. Bash explicitly enables `-e` and `pipefail`; a failing verifier
-cannot be hidden by `tee`. Independent checks continue after a test failure
-when their prerequisites succeeded. No step uses `continue-on-error`.
+各系統では、R のソースビルドとインタープリターで動作する R の検証に最大 180 分を許可します。
+Bash では `-e` と `pipefail` を明示的に有効にし、検証ツールの失敗を `tee` で隠せないようにします。
+独立した検査は、前提となる処理が成功していれば、テストの失敗後も続行します。
+`continue-on-error` を使うステップはありません。
 
-Evidence initialization precedes staging, so a manifest failure still leaves
-a log to upload. Compiler, configure, build, install, decoder, package-check
-and native failure logs are retained. Native evidence collection and artifact
-upload run on success or failure; raw native JSON, logs and R test-output
-globs are also included in case collection fails. Cancellation or forced runner termination may still
-prevent a complete artifact. Build trees and R installations are not uploaded.
+証拠の初期化はステージングより先に行うため、manifest の検査が失敗しても
+アップロードするログが残ります。コンパイラー、configure、ビルド、インストール、
+デコーダー、パッケージチェック、ネイティブ検証の失敗ログを保持します。
+ネイティブ検証の証拠収集と成果物のアップロードは、成功・失敗のどちらでも実行します。
+収集の失敗に備えて、ネイティブ検証の未加工の JSON、ログ、glob で指定した R テスト出力も
+含めます。ただし、キャンセルや runner の強制終了によって、完全な成果物を残せない場合があります。
+ビルドツリーと R のインストール先はアップロードしません。
 
-Each artifact contains the exact checkout commit, deterministic source ZIP,
-staging report, host/tool versions and verification receipts. Artifact paths
-record the original runner provenance. Retention is 14 days; download release
-evidence before expiry if it must be retained longer.
+各成果物には、正確な checkout コミット、決定的なソース ZIP、ステージングの報告、
+ホストとツールのバージョン、検証記録を含めます。成果物のパスには元の runner の由来を記録します。
+保持期間は 14 日です。リリースの証拠をより長く残す必要がある場合は、期限までにダウンロードしてください。
 
-`Required Linux checks` succeeds only if every R matrix lane succeeds. A failed,
-skipped or cancelled lane makes that aggregate fail. Repository owners can
-select that name in branch protection; this workflow does not configure branch
-protection itself. Offline consumers test their own isolated package/repository
-configuration. Those settings are not an OS-level network sandbox.
+`Required Linux checks` は、R の matrix の全系統が成功した場合に限って成功します。
+失敗・スキップ・キャンセルした系統があれば、この集約チェックは失敗します。
+リポジトリ所有者はブランチ保護でこの名前を選択できますが、この workflow 自体は
+ブランチ保護を設定しません。オフラインの利用検証は、それぞれ隔離したパッケージ・リポジトリ設定で
+実行します。これらの設定は OS レベルのネットワークサンドボックスではありません。
 
 ## Small offline installer rehearsal
 
@@ -116,23 +116,23 @@ configuration. Those settings are not an OS-level network sandbox.
 python3 scripts/install_ci_tools.py self-test
 ```
 
-These fixture tests cover a valid archive, safe internal links, traversal and
-link escapes, duplicate/special members, wrong roots, required bundled
-`codetools`, correct/incorrect digests and preserving a failed process's exit
-status and log. They do not build R or represent a hosted run. Source building
-requires the development packages listed in the workflow and several gigabytes
-of free space; use a fresh temporary tool destination.
+これらの fixture テストは、有効なアーカイブ、安全な内部リンク、トラバーサルと
+リンクによる範囲外への参照、重複した項目と特殊な項目、誤ったルート、必須の同梱
+`codetools`、正しいダイジェストと誤ったダイジェスト、失敗したプロセスの終了状態とログの保持を
+検証します。R のビルドは行わず、ホストされた環境での実行を示すものでもありません。
+ソースビルドには workflow に記載された開発用パッケージと数 GB の空き容量が必要です。
+ツールの配置先には新しい一時ディレクトリを使ってください。
 
 ## Bounded default-scale PNG verification
 
-The required C++ PNG lane uses the default scale8 and all764 symbols, with one real R process for each of725 requests. Every process must exit0 with no stderr or trailing output. `verify_default_scale.py` applies the documented `R_MAX_VSIZE=1073741824` vector-heap limit and `R_GC_MEM_GROW=0`; this is not an OS RSS limit. The wrapper records per-request hashes and process outcomes in a compressed ledger. Java detection retains scale3 as separately identified coverage. The180-minute job limit accommodates native source builds and the fresh-process default8 replay. No reduced-scale pass substitutes for the default8 gate.
+必須の C++ PNG 系統は、既定スケール 8 で全 764 シンボルを扱い、725 件の各要求に対して実際の R プロセスを 1 つ使います。すべてのプロセスは終了コード 0 で終了し、stderr や末尾の余分な出力がないことを要求します。`verify_default_scale.py` は文書化した `R_MAX_VSIZE=1073741824` のベクトルヒープ上限と `R_GC_MEM_GROW=0` を適用します。これは OS の RSS 上限ではありません。ラッパーは要求ごとのハッシュとプロセスの結果を圧縮した台帳へ記録します。Java の検出はスケール 3 を維持し、別の検証範囲として区別します。180 分のジョブ上限は、ネイティブのソースビルドと、新しいプロセスによる既定スケール 8 の再実行に対応するためのものです。スケールを下げて合格しても、既定スケール 8 の必須検査の代わりにはなりません。
 
 ## Auxiliary-process and Java detector controls
 
-Machine-readable Java, SVG-rasterizer and R probe processes must exit cleanly
-without stderr; receipts record both output hashes and sizes. The separate Java
-scale-8 characterization compares the real R PNG with an independently encoded
-PNG having identical luminance pixels, and keeps matrix, scale-3 and C++ payload
-controls. A matching Java PNG rejection is recorded as a detector rejection,
-not a successful decode. These sampled controls do not replace the complete
-C++ default-scale-8 gate or the strict Java scale-3 suite.
+機械可読の出力を返す Java、SVG ラスター化ツール、R プローブの各プロセスは、stderr を出さず
+正常終了する必要があります。記録には出力のハッシュとサイズの両方を残します。
+別に行う Java のスケール 8 での特性調査では、実際の R PNG と、同じ輝度のピクセルを持つ
+独立にエンコードした PNG を比較し、行列、スケール 3、C++ によるペイロードの対照検証も維持します。
+両 PNG に一致する Java の拒否結果は、デコードの成功ではなく検出器の拒否として記録します。
+これらのサンプルによる対照検証は、完全な C++ 既定スケール 8 の必須検査や、
+厳格な Java スケール 3 のテスト一式の代わりにはなりません。

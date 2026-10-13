@@ -1,9 +1,5 @@
 # Security
 
-This package is an offline QR encoder. It does not fetch payload URLs or inspect
-what a QR link will do. Treat scanned destinations as untrusted. Resource bounds
-limit single requests; applications must also bound request rates and concurrency.
+このパッケージはオフラインの QR エンコーダーです。payload の URL を取得せず、QR のリンク先で何が起こるかも検査しません。読み取ったリンク先は信頼できないものとして扱ってください。資源上限は個々の要求を制限します。アプリケーション側でも要求頻度と同時実行数を制限する必要があります。
 
-Please report reproducible vulnerabilities privately to the repository owner
-using GitHub's supported private reporting route if it is enabled. Do not post
-secrets in public issues. There is no promised response SLA or GS1 certification.
+再現可能な脆弱性は、GitHub の非公開報告機能が有効な場合、その経路で repository の所有者へ非公開で報告してください。公開 Issue に秘密情報を投稿しないでください。応答の SLA は約束しておらず、GS1 認証もありません。

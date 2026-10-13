@@ -1,5 +1,7 @@
 # SpecQR R
 
+A from-scratch QR Code Model 2 encoder in R, with no additional runtime package dependencies.
+
 QR Code Model 2 をフルスクラッチで実装した、実行時の追加パッケージ依存がない R パッケージです。QR の符号化、誤り訂正、配置、マスク選択、SVG / PNG 出力をすべて R で処理します。外部 QR ライブラリ、C / C++ 拡張、FFI、Web API は使用しません。
 
 ## 対応範囲
