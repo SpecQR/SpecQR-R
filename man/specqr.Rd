@@ -78,8 +78,8 @@
 \alias{merge_structured_append_parts}
 \alias{specqr_cli}
 \docType{package}
-\title{Dependency-Free QR Model 2 Encoding in R}
-\description{QR Model 2 versions 1 through 40, all four correction levels and eight masks, segment optimization, GS1 helpers, structured append and image rendering. All runtime algorithms use base R.}
+\title{Dependency-Free QR Code Model 2 Encoding in R}
+\description{QR Code Model 2 versions 1 through 40, all four correction levels and eight masks, segment optimization, GS1 helpers, Structured Append and image rendering. All runtime algorithms use base R.}
 \usage{
 generate(value, options = NULL, ...)
 generate_segments(segments, options = NULL, ...)
@@ -97,38 +97,38 @@ generate_structured_append(input, options = NULL, ...)
 merge_structured_append_parts(parts, ...)
 }
 \arguments{
-  \item{value, input}{One Unicode character scalar, a raw vector, or an explicitly supported list of segments. NUL is available only through raw bytes.}
-  \item{segments}{A list of validated segment objects or explicit segment mappings.}
-  \item{options}{A \code{specqr_options} object, or \code{NULL} to use defaults.}
-  \item{...}{Named encoding or rendering options described below. Unknown and duplicate names are rejected.}
-  \item{version}{QR version, an integer from 1 to 40.}
-  \item{error_correction_level}{One of \code{"L"}, \code{"M"}, \code{"Q"}, or \code{"H"}.}
-  \item{mode}{One supported data mode, or \code{NULL} for general capacity.}
-  \item{control_bits}{Nonnegative exact integer bit budget reserved for controls.}
-  \item{text}{One non-missing Unicode string to optimize.}
-  \item{allow_kanji}{Whether the optimizer may use the fixed QR Kanji mapping.}
-  \item{x}{A QR result or square logical module matrix for rendering.}
-  \item{margin, scale}{Quiet-zone modules and pixels per module. \code{NULL} uses stored options or defaults.}
-  \item{foreground, background}{Supported color strings; \code{NULL} uses stored options or defaults.}
-  \item{format}{Output format, \code{"png"} or \code{"svg"} for data URLs.}
-  \item{color}{Hexadecimal RGB/RGBA or a simple ASCII CSS color name.}
-  \item{strict}{If \code{TRUE}, unsupported raster colors fail. Otherwise a safe unrecognized name returns \code{NULL}.}
-  \item{parts}{Decoded mappings containing exact fields \code{index}, \code{total}, \code{parity}, and \code{data}. Index is one-based.}
+  \item{value, input}{Unicode の文字列スカラー 1 個、raw ベクトル、または明示的に対応しているセグメントのリストです。NUL は raw バイト列でのみ使用できます。}
+  \item{segments}{検証済みのセグメントオブジェクト、または明示的なセグメントのマッピングのリストです。}
+  \item{options}{\code{specqr_options} オブジェクトです。\code{NULL} を指定すると既定値を使います。}
+  \item{...}{以下で説明する、名前付きのエンコードまたは描画オプションです。未知の名前と重複した名前は拒否します。}
+  \item{version}{QR のバージョンで、1 から 40 までの整数です。}
+  \item{error_correction_level}{\code{"L"}、\code{"M"}、\code{"Q"}、\code{"H"} のいずれかです。}
+  \item{mode}{対応するデータモードのいずれかです。一般的な容量には \code{NULL} を指定します。}
+  \item{control_bits}{制御用に確保するビット数で、負でない正確な整数です。}
+  \item{text}{最適化する Unicode 文字列 1 個です。欠損値は使えません。}
+  \item{allow_kanji}{最適化で固定の QR Kanji マッピングを使えるかどうかを指定します。}
+  \item{x}{描画する QR の結果、または正方形の論理モジュール行列です。}
+  \item{margin, scale}{クワイエットゾーンのモジュール数と、1 モジュールあたりのピクセル数です。\code{NULL} は保存されたオプションか既定値を使います。}
+  \item{foreground, background}{対応する色の文字列です。\code{NULL} は保存されたオプションか既定値を使います。}
+  \item{format}{出力形式です。データ URL では \code{"png"} または \code{"svg"} を指定します。}
+  \item{color}{16 進数の RGB/RGBA、または単純な ASCII の CSS 色名です。}
+  \item{strict}{\code{TRUE} の場合、未対応のラスター色はエラーになります。それ以外の場合、認識できない安全な名前には \code{NULL} を返します。}
+  \item{parts}{正確なフィールド \code{index}、\code{total}、\code{parity}、\code{data} を含む、復号済みのマッピングです。添字は 1 始まりです。}
 }
 \details{
-Use \code{generate(value, ...)} for a character scalar, raw bytes, or a list of segments. Use \code{specqr_options(...)} for reusable options. Options include \code{error_correction_level}, \code{version}, \code{min_version}, \code{max_version}, \code{mask_pattern}, \code{mode}, \code{optimize_segments}, \code{allow_kanji}, \code{boost_error_correction}, \code{eci}, \code{gs1}, \code{fnc1}, \code{fnc1_second}, \code{structured_append}, \code{margin}, \code{scale}, \code{foreground}, \code{background}, and \code{print_dpi}. Defaults use automatic version/mask, correction level M, margin 4 and scale 8. Unknown or duplicate options fail.
+\code{generate(value, ...)} は、文字列スカラー、raw バイト列、またはセグメントのリストに使います。再利用するオプションには \code{specqr_options(...)} を使います。オプションには \code{error_correction_level}、\code{version}、\code{min_version}、\code{max_version}、\code{mask_pattern}、\code{mode}、\code{optimize_segments}、\code{allow_kanji}、\code{boost_error_correction}、\code{eci}、\code{gs1}、\code{fnc1}、\code{fnc1_second}、\code{structured_append}、\code{margin}、\code{scale}、\code{foreground}、\code{background}、\code{print_dpi} があります。既定ではバージョンとマスクを自動で選択し、訂正レベル M、余白 4、スケール 8 を使います。未知のオプションや重複したオプションはエラーになります。
 
-\code{plan} and \code{estimate} return arithmetic capacity plans; \code{generate} returns a \code{specqr_result}. \code{generate_segments}, \code{plan_segments} and \code{analyze_segments} accept manually specified segments. \code{segment(mode, data=NULL, ...)} creates a validated segment. Convenience functions construct numeric, alphanumeric, byte, kanji, ECI, FNC1 and structured-append segments. ECI, FNC1 and structured-append controls cannot be combined.
+\code{plan} と \code{estimate} は算術計算による容量計画を返し、\code{generate} は \code{specqr_result} を返します。\code{generate_segments}、\code{plan_segments}、\code{analyze_segments} は手動で指定したセグメントを受け付けます。\code{segment(mode, data=NULL, ...)} は検証済みのセグメントを作成します。補助関数は numeric、alphanumeric、byte、kanji、ECI、FNC1、Structured Append のセグメントを構築します。ECI、FNC1、Structured Append の制御は組み合わせられません。
 
-\code{to_svg} returns a string; \code{to_png} returns raw PNG bytes. \code{to_pixels} returns row-major RGBA bytes and dimensions. Data URL helpers return strings. Rendering uses no external image package or graphics device. \code{render_dimensions} supports explicit \code{dpi}. \code{module_at(result,x,y)} uses one-based column and row coordinates.
+\code{to_svg} は文字列を返し、\code{to_png} は raw の PNG バイト列を返します。\code{to_pixels} は行優先の RGBA バイト列と寸法を返します。データ URL の補助関数は文字列を返します。描画には外部の画像パッケージやグラフィックスデバイスを使いません。\code{render_dimensions} は明示的な \code{dpi} に対応します。\code{module_at(result,x,y)} は 1 始まりの列・行の座標を使います。
 
-\code{GS1Element(ai,value)} creates one list element. GS1 helpers accept a list of elements or supported string representations and use a bounded 50-AI catalog. Digital Link helpers are offline and apply a strict ASCII-authority profile. They are not a complete GS1 standards validator.
+\code{GS1Element(ai,value)} はリスト要素を 1 個作成します。GS1 の補助関数は要素のリスト、または対応する文字列表現を受け付け、50 種に限定した AI カタログを使います。Digital Link の補助関数はオフラインで動作し、互換性を拡張した ASCII URL profile を適用します。GS1 規格全体を検証するものではありません。
 
-\code{generate_structured_append(input,...)} and \code{generate_segments_structured_append} return 2 to 16 symbols. \code{merge_structured_append_parts} validates order, count and parity before merging. Parity uses the original payload bytes.
+\code{generate_structured_append(input,...)} と \code{generate_segments_structured_append} は 2 から 16 個のシンボルを返します。\code{merge_structured_append_parts} は結合する前に順序、個数、パリティを検証します。パリティには元のペイロードのバイト列を使います。
 
-Payload text must be a non-missing scalar string. For binary input including NUL, use \code{raw}. Factors, vectors and data frames are not silently converted. Use \code{lapply} for multiple payloads. Invalid inputs raise subclasses of \code{specqr_error}; \code{error_code} returns a stable code. The repository/source ZIP and installed documentation include the full API, GS1, rendering and verification guides.
+ペイロードのテキストには、欠損値でないスカラー文字列が必要です。NUL を含むバイナリ入力には \code{raw} を使ってください。因子、ベクトル、データフレームを暗黙に変換することはありません。複数のペイロードには \code{lapply} を使ってください。不正な入力では \code{specqr_error} のサブクラスを発生させ、\code{error_code} は安定したコードを返します。リポジトリとソース ZIP、インストール済みの文書には、API、GS1、描画、検証の完全なガイドを含みます。
 }
-\value{Encoding returns a classed list with a logical matrix, version, correction level, mask, raw codewords, segments, options and diagnostics. Planning returns a classed list including \code{ok}, required bits and capacity. Helpers return the data type described above.}
+\value{エンコードは、論理行列、バージョン、訂正レベル、マスク、raw のコードワード、セグメント、オプション、診断を含む、クラスを持つリストを返します。計画は、\code{ok}、必要なビット数、容量を含む、クラスを持つリストを返します。補助関数は上記で説明したデータ型を返します。}
 \examples{
 q <- generate("HELLO WORLD")
 stopifnot(q$size == 21, is.raw(to_png(q, scale=1)))

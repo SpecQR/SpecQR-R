@@ -1,10 +1,6 @@
 # GS1 and Digital Link
 
-SpecQR implements a bounded 50-AI catalog, check digits, element strings and an
-offline Digital Link adapter. It is not a complete GS1 General Specifications
-validator. Dates are checked for their fixed six-digit representation, not
-calendar validity; application-specific AI associations and the entire current
-GS1 dictionary are outside this catalog.
+SpecQR は、50 種に限定した AI カタログ、チェックディジット、element string、オフラインの Digital Link adapter を実装しています。GS1 General Specifications 全体を検証するものではありません。日付は固定の 6 桁表現を検査し、実在する暦日かどうかは検査しません。用途固有の AI 間の関連付けや、現在の GS1 辞書全体は、このカタログの対象外です。
 
 ```r
 library(specqr)
@@ -15,111 +11,60 @@ parsed <- parse_gs1_digital_link(link)
 checked <- validate_gs1_digital_link(link)
 ```
 
-Elements are `GS1Element(ai,value)` or `list(ai="10",value="LOT")` objects in a list. Both fields must be scalar strings. Numeric conversion is never used for AI/value input, so leading zeroes cannot be lost. Data frames are rejected; explicitly turn rows into element lists when appropriate.
+要素は、list に含めた `GS1Element(ai,value)` または `list(ai="10",value="LOT")` オブジェクトです。両方の field は scalar 文字列である必要があります。AI/value の入力は数値へ変換しないため、先頭のゼロは失われません。data frame は拒否します。必要に応じて各行を明示的に要素の list へ変換してください。
 
 ## Catalog and validation
 
-`get_supported_gs1_ais()` returns metadata for:
+`get_supported_gs1_ais()` は、次の AI の metadata を返します。
 
 * `00`, `01`, `02`, `10`, `11`, `12`, `13`, `15`, `16`, `17`, `20`, `21`, `22`
 * `30`, `37`, `240`, `241`, `400`, `410`–`415`, `420`, `422`, `424`–`426`
-* Concrete `3100`–`3105`, `3200`–`3205`, and `91`–`99`
+* 個別の `3100`–`3105`、`3200`–`3205`、`91`–`99`
 
-`get_gs1_ai_info(ai)` returns one entry or `NULL`. Metadata includes fixed or
-variable length, numeric/text kind, check-digit rule, separator rule, Digital
-Link role, and eligible primary key. Generic GS1, GTIN, and SSCC check digit
-helpers calculate, append where applicable, and validate the modulo-10 digit.
-AI `01`/`02` enforce GTIN check digits and `00` enforces SSCC check digits. AI
-`414` is a 13-digit primary key in this bounded profile; no additional GLN
-check-digit rule is claimed.
+`get_gs1_ai_info(ai)` は、1 件の情報または `NULL` を返します。metadata には、固定長または可変長、数値または text の種別、チェックディジットの規則、区切りの規則、Digital Link での役割、primary key にできるかどうかを含みます。汎用 GS1、GTIN、SSCC のチェックディジット用ヘルパーは、modulo-10 digit の計算、適用できる場合の付加、検証を行います。
+AI `01`/`02` は GTIN、`00` は SSCC のチェックディジットを検証します。この限定した profile では、AI `414` は 13 桁の primary key です。追加の GLN チェックディジット規則への対応は主張しません。
 
-`parse_gs1_human_readable`, `parse_gs1_element_string`, and
-`create_gs1_element_string` convert parenthesized/raw representations.
-`normalize_gs1_elements` accepts either input representation or element objects;
-`gs1_to_human_readable` produces the parenthesized representation.
+`parse_gs1_human_readable`、`parse_gs1_element_string`、`create_gs1_element_string` は、括弧付き表現と raw 表現を変換します。
+`normalize_gs1_elements` は、どちらの入力表現も、要素オブジェクトも受け付けます。`gs1_to_human_readable` は括弧付き表現を生成します。
 
-Values must use printable ASCII and contain neither parentheses nor ASCII GS.
-A literal percent sign remains a literal percent sign. Variable-length fields
-receive ASCII GS only when another element follows. Unexpected, doubled, or
-trailing separators fail. A final variable-length value that ends in an
-apparently concatenated fixed-length AI/value is rejected as an ambiguous
-missing separator; this is a conservative bounded suffix heuristic.
+値は printable ASCII を使い、括弧と ASCII GS を含めないでください。文字としての percent 記号は、その文字のまま保持します。可変長 field には、後続の要素がある場合だけ ASCII GS を付けます。予期しない区切り、重複した区切り、末尾の区切りは失敗します。最後の可変長の値が、固定長の AI/value を連結したように見える並びで終わる場合は、区切りの欠落による曖昧さとして拒否します。これは、末尾だけを対象とする保守的で限定的な heuristic です。
 
-`validate_gs1_elements` and `validate_gs1_element_string` return structured list results. `collect_all_errors=FALSE` limits element-validation
-errors to the first failure; `context="digital-link"` requires a supported
-primary AI. Unsupported AIs cannot be enabled with `allow_unsupported_ai`.
-Custom iterator protocols are not supported.
+`validate_gs1_elements` と `validate_gs1_element_string` は、構造化した list の結果を返します。`collect_all_errors=FALSE` は、要素の検証エラーを最初の失敗に限定します。`context="digital-link"` は、対応する primary AI を要求します。未対応の AI を `allow_unsupported_ai` で有効にすることはできません。
+独自の iterator protocol には対応していません。
 
 ## Digital Link profile
 
-`create_gs1_digital_link`, `parse_gs1_digital_link`,
-`validate_gs1_digital_link`, and `normalize_gs1_digital_link` never fetch URLs.
-They use a bounded HTTP(S) URL adapter with strict payload decoding. This is
-not complete WHATWG URL or IDNA/UTS46 conformance:
+`create_gs1_digital_link`、`parse_gs1_digital_link`、`validate_gs1_digital_link`、`normalize_gs1_digital_link` は、URL を取得しません。
+厳密な payload の復号を行う、範囲を限定した HTTP(S) URL adapter を使います。WHATWG URL や IDNA/UTS46 に完全準拠するものではありません。
 
-* HTTP(S) slash spellings and authority/path backslashes are repaired; edge
-  ASCII C0/space is trimmed and TAB/LF/CR removed. A query backslash remains data
-* Nonempty fragments reject. Empty `#` is accepted, retained by creation and
-  removed by normalization. Empty builder `?` is replaced; nonempty query rejects
-* ASCII reg-name hosts are lowercased, including harmless punctuation/empty DNS
-  labels accepted by browser URL parsing. ASCII percent-encoded hosts decode
-  strictly; encoded authority delimiters and empty hosts reject
-* Numeric IPv4 accepts short, octal, hexadecimal and integer aliases with checked
-  accumulation, exact component bounds and canonical dotted-decimal output.
-  `0x`, `0X`, `1.0x`, `0x.`, `1.0X`, and `1.2.3.0x` are valid aliases;
-  `example.0x`, malformed numeric candidates and overflow reject
-* Bracketed RFC IPv6, including valid dotted-decimal tails, uses lowercase hex
-  groups and the first longest zero run. Zone identifiers reject
-* Credentials are escaped and preserved as URL text, without fetching or
-  authentication; diagnostics never echo extra credential data
-* Empty ports are omitted. Decimal ports use checked 0–65535 bounds, allow
-  leading zeros and omit HTTP/HTTPS defaults
-* Percent escapes and decoded UTF-8 remain strict in host, credentials, path
-  and query. Invalid UTF-8 and decoded NUL reject; R strings cannot contain NUL
-* Unicode/IDNA hostname conversion remains outside this base-R-only adapter.
-  No partial UTS46 or IDNA implementation is claimed. An ASCII hostname can be
-  supplied by an application that has independently resolved its IDNA policy
+* HTTP(S) の slash 表記と authority/path の backslash を補正します。両端の ASCII C0/space を除去し、TAB/LF/CR を削除します。query の backslash はデータとして保持します。
+* 空でない fragment は拒否します。空の `#` は受理し、生成時には保持し、正規化時には削除します。builder の空の `?` は置き換え、空でない query は拒否します。
+* ASCII reg-name host は小文字にします。browser の URL 解析が受理する無害な句読記号や空の DNS label も対象です。ASCII の percent-encoded host は厳密に復号し、符号化された authority の区切りと空の host は拒否します。
+* 数値 IPv4 は、短縮、八進、十六進、整数の別表記を受理します。累積計算と各 component の正確な範囲を検査し、正規の dotted-decimal 表現を出力します。
+  `0x`、`0X`、`1.0x`、`0x.`、`1.0X`、`1.2.3.0x` は有効な別表記です。
+  `example.0x`、不正な数値候補、overflow は拒否します。
+* 括弧付き RFC IPv6 は、有効な dotted-decimal の末尾を含め、小文字の十六進 group と、最初に現れる最長のゼロの連続を使います。zone identifier は拒否します。
+* credentials は escape し、URL text として保持します。取得や認証は行いません。診断に追加の credential data をそのまま出力することはありません。
+* 空の port は省略します。十進 port は 0–65535 の範囲を検査し、先頭のゼロを許可し、HTTP/HTTPS の既定 port を省略します。
+* host、credentials、path、query の percent escape と復号後の UTF-8 は、引き続き厳密に検査します。不正な UTF-8 と復号後の NUL は拒否します。R の文字列には NUL を含められません。
+* Unicode/IDNA の hostname 変換は、この base R のみの adapter の対象外です。部分的な UTS46 や IDNA の実装は主張しません。アプリケーションが IDNA の方針を独立に解決したうえで、ASCII hostname を渡すことはできます。
 
-The adapter does not validate DNS existence, reachability, URL trust, or SSRF
-safety. Parsing performs no networking.
+adapter は、DNS の存在、到達性、URL の信頼性、SSRF に対する安全性を検証しません。解析ではネットワーク通信を行いません。
 
-Primary AIs are `00`, `01` (builder default), and `414`. Qualifiers `10`, `21`,
-`22` can appear in the path only after `01`. Other supported AIs are query data.
-AIs cannot repeat within a Digital Link. `path_ais=character()` keeps all qualifiers in
-the query. Dot-only qualifier values `.` and `..` are always kept in the query,
-even when selected for the path; actual path dot segments after the primary AI
-are rejected before interpreting AI/value pairs. Percent-encoded dots are also
-rejected there. A literal value `%2e` is encoded as `%252e` and preserved.
+primary AI は `00`、`01`（builder の既定）、`414` です。qualifier の `10`、`21`、`22` を path に置けるのは、`01` の後だけです。その他の対応 AI は query data です。
+Digital Link 内で AI を重複させることはできません。`path_ais=character()` は、すべての qualifier を query に保持します。dot だけの qualifier 値 `.` と `..` は、path 用に選択しても常に query に保持します。primary AI より後の実際の path dot segment は、AI/value の組を解釈する前に拒否します。percent-encoded dot もその位置では拒否します。文字列としての値 `%2e` は `%252e` と符号化して保持します。
 
-The builder normalizes resolver-prefix dot segments, then rejects any surviving
-prefix component that decodes once to a primary AI, including `%30%31`. This
-prevents generated links from having an ambiguous payload start. Primary-looking
-components removed by preceding dot normalization are allowed. Other prefix
-components preserve existing escapes; raw UTF-8 and path characters are percent
-encoded without changing their decoded value.
+builder は resolver-prefix の dot segment を正規化した後、残った prefix component のうち、1 回の復号で primary AI になるものを拒否します。`%30%31` も対象です。これにより、生成したリンクの payload の開始位置が曖昧になることを防ぎます。先行する dot 正規化で削除された、primary AI のように見える component は許可します。その他の prefix component は既存の escape を保持します。raw UTF-8 と path の文字は、復号後の値を変えずに percent encode します。
 
-Query decoding uses form semantics (`+` is a space), with strict percent/UTF-8
-validation. `unknown_query="preserve"` retains non-GS1 keys, duplicates, order,
-empty values, and decoded whitespace; `"reject"` fails on them. Numeric AI-shaped
-keys still require catalog support. Normalization uses the
-`"specqr-deterministic"` mode, places eligible qualifiers in the path, sorts GS1
-query attributes lexically by AI/value, and appends unknown query pairs in their
-original order. Dot-only query qualifiers remain in query. It is idempotent for
-accepted normalized output.
+query の復号は form の意味論（`+` は空白）を使い、percent/UTF-8 を厳密に検証します。`unknown_query="preserve"` は、非 GS1 key、重複、順序、空の値、復号後の空白を保持します。`"reject"` はそれらを拒否します。数値の AI の形をした key には、引き続きカタログの対応が必要です。
+正規化は `"specqr-deterministic"` mode を使い、対象となる qualifier を path に置き、GS1 query attribute を AI/value の辞書順に並べ、unknown query の組を元の順序で末尾に追加します。dot だけの query qualifier は query に残します。受理された正規化後の出力に対しては冪等です。
 
-Validation reports HTTP and preserved-unknown-query warnings. The
-`normalize=TRUE` validation option is unsupported; call the explicit normalizer.
-Failures throw `specqr_invalid_gs1` with stable `error_code(error) == "INVALID_GS1"`
-and a finer `detail_code`; validation issues expose that finer code, message,
-reason and applicable context fields.
+検証は、HTTP と保持した unknown query に関する警告を報告します。検証の `normalize=TRUE` option は未対応です。正規化用の関数を明示的に呼び出してください。
+失敗時には `specqr_invalid_gs1` を投げます。安定した `error_code(error) == "INVALID_GS1"` と、より細かな `detail_code` を持ちます。検証の issue は、その詳細 code、message、reason、適用可能な context field を公開します。
 
 ## Bounds
 
-Text is valid UTF-8 and at most 1,000,000 UTF-16 code units (with a preliminary
-4,000,000-byte ceiling). Element-list aggregate AI/value work is capped at
-1,000,000 bytes; valid AI/value text is ASCII. Element and query pair counts are
-limited to 16,384, and path component counts to 32,769. Limits are checked before
-unbounded iteration, numeric parsing, or large output growth.
+text は有効な UTF-8 で、最大 1,000,000 UTF-16 code units です。その前に 4,000,000 bytes の上限も検査します。要素 list の AI/value 全体の処理量は 1,000,000 bytes に制限します。有効な AI/value の text は ASCII です。要素と query の組は最大 16,384 件、path component は最大 32,769 個です。上限のない反復、数値の解析、出力の大幅な増加の前に上限を検査します。
 
 ## URL 互換性の回復
 
@@ -140,13 +85,7 @@ Unicode/IDNA host 12、raw Digital Link primary 検査 2、安全な dot query
 
 ## Additional URL serialization evidence
 
-The independent 139-positive extension also gates raw caret path serialization
-as `%5E`, including resolver-prefix builder input. Caret escaping is a URL
-serialization correction; decoded GS1 payload bytes do not change.
+独立した 139 正例の拡張では、resolver-prefix の builder 入力を含め、path の raw caret を `%5E` として直列化することも検査します。caret の escape は URL の直列化の修正であり、復号後の GS1 payload bytes は変わりません。
 
-Outside the original 1,411 inputs, inherited base-path cleanup collapses duplicate
-separators (`/a//b` becomes `/a/b`), unlike browser URL serialization. ASCII
-reg-name support does not fully validate ACE (`xn--`) labels: some names accepted
-here are rejected by a UTS46-aware parser. This is an explicit incomplete IDNA
-validation contract, not evidence that such names are valid or safe destinations.
-No partial IDNA decoder or new networking dependency is introduced.
+元の 1,411 入力の対象外では、従来からの base-path 整理が重複した区切りをまとめます（`/a//b` は `/a/b` になります）。この動作は browser の URL 直列化と異なります。ASCII reg-name 対応は、ACE（`xn--`）label を完全には検証しません。ここで受理する名前の一部を、UTS46 対応の parser は拒否します。これは IDNA 検証が不完全であることを明示した契約であり、その名前が有効、または安全なリンク先であるという証拠ではありません。
+部分的な IDNA decoder や新たなネットワーク依存は導入していません。

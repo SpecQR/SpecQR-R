@@ -1,11 +1,11 @@
 # Rendering
 
-`to_svg(q)` returns one UTF-8 string. `to_png(q)` returns a raw vector containing an RGBA PNG. `to_pixels(q)` returns a `specqr_pixels` list with width, height and row-major interleaved RGBA `$pixels`. `render_rgba(q)` exposes the same bytes as `$data`. Inputs may be a QR result or a square logical matrix; missing values and dimensions greater than177 are rejected.
+`to_svg(q)` は UTF-8 文字列を 1 個返します。`to_png(q)` は RGBA PNG を含む raw ベクトルを返します。`to_pixels(q)` は `specqr_pixels` リストを返します。このリストは width、height と、行優先で RGBA を交互に並べた `$pixels` を持ちます。`render_rgba(q)` は同じバイト列を `$data` として公開します。入力には QR の結果、または正方形の論理行列を使えます。欠損値と 177 を超える寸法は拒否します。
 
-Colors: hexadecimal RGB/RGBA `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA`, plus black, white and transparent are available for every output. Simple ASCII CSS names may be used in SVG; unknown raster colors fail instead of silently substituting a color. The R helper `parse_color(color, strict=FALSE)` returns `NULL` for an unrecognized safe CSS name; use `strict=TRUE` to raise a color error. This R default differs from the Julia helper. XML output contains escaped attributes and no arbitrary markup. A four-module quiet zone is the default. Colors, alpha, small margins and low contrast can affect scanning; diagnostic warnings are advisory.
+色には 16 進数の RGB/RGBA 表記 `#RGB`、`#RGBA`、`#RRGGBB`、`#RRGGBBAA` と、black、white、transparent をすべての出力で使えます。SVG では単純な ASCII の CSS 色名も使えます。ラスターで未知の色を指定した場合は、暗黙に別の色へ置き換えずエラーにします。R の補助関数 `parse_color(color, strict=FALSE)` は、認識できない安全な CSS 色名に対して `NULL` を返します。色のエラーを発生させるには `strict=TRUE` を使ってください。この R の既定値は Julia の補助関数とは異なります。XML 出力では属性をエスケープし、任意のマークアップは含めません。クワイエットゾーンの既定値は 4 モジュールです。色、アルファ、小さな余白、低いコントラストは読み取りに影響する場合があります。診断の警告は参考情報です。
 
-PNG uses a from-scratch PNG writer, stored DEFLATE blocks, unsigned-safe CRC32 and Adler32. It does not call a graphics device, libpng, zlib, an R image package or an external process. Files are deliberately uncompressed and larger than optimized PNG output. The package returns bytes; writing the bytes is an explicit caller operation.
+PNG は独自実装の PNG ライター、非圧縮の DEFLATE ブロック、符号なし演算を安全に扱う CRC32 と Adler32 を使います。グラフィックスデバイス、libpng、zlib、R の画像パッケージ、外部プロセスは呼び出しません。ファイルは意図的に非圧縮とし、最適化した PNG 出力より大きくなります。パッケージはバイト列を返し、その書き込みは呼び出し元が明示的に行います。
 
-`to_svg_data_url` uses percent-encoded UTF-8. `to_png_data_url` uses base64. `to_data_url(q,format="svg")` and `render` select an output. `render_dimensions(q,dpi=300)` reports finite pixel and print dimensions. DPI must be positive and finite. Overflow/underflow in physical dimensions is rejected.
+`to_svg_data_url` はパーセントエンコードした UTF-8 を使います。`to_png_data_url` は base64 を使います。`to_data_url(q,format="svg")` と `render` は出力を選択します。`render_dimensions(q,dpi=300)` は有限のピクセル寸法と印刷寸法を報告します。DPI は正の有限値でなければなりません。物理寸法のオーバーフローとアンダーフローは拒否します。
 
-The raster budget is4,194,304 pixels; SVG and data URL budgets are8,388,608 and33,554,432 characters. Geometry integers are bounded, and budgets are checked before allocating the raster. Typical v40 with default margin4 and scale8 is1480 square, within the limit. Use smaller scale for many large symbols.
+ラスターの上限は 4,194,304 ピクセルで、SVG とデータ URL の上限はそれぞれ 8,388,608 文字と 33,554,432 文字です。寸法を表す整数には上限があり、ラスターを割り当てる前に各上限を確認します。通常の v40 で既定の余白 4 とスケール 8 を使う場合は 1480 ピクセル四方となり、上限内に収まります。大きなシンボルを多数扱う場合は、より小さいスケールを使ってください。
